@@ -1,45 +1,60 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { useEffect } from "react"
+import AppSafeView from "./src/components/AppSafeView/View/AppSafeView"
+import MainAppStackNavigation from "./src/navigations/MainAppStackNavigation"
+import FlashMessage from "react-native-flash-message"
+import { initDB, SyncOfflineNotes } from "./src/database/databse"
+import NetInfo from "@react-native-community/netinfo"
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+const App = () => {
+
+  useEffect(() => {
+
+    const setupDB = async () => {
+      try {
+        await initDB()
+        console.log("Database Setup successful")
+      }
+      catch (error) {
+        console.log("Error setting up the database")
+      }
+    }
+
+    setupDB();
+
+  }, [])
+
+  useEffect(() => {
+    const syncNotes = async () => {
+      try {
+        const state = await NetInfo.fetch()
+        if (state.isConnected) {
+          await SyncOfflineNotes()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    syncNotes()
+  }, [])
+
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        SyncOfflineNotes()
+      }
+    })
+    return () => unsubscribe()
+  }, [])
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
+    <AppSafeView>
+      <MainAppStackNavigation />
+      <FlashMessage position="top" />
+    </AppSafeView>
+  )
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
-
-export default App;
+export default App

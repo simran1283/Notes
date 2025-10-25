@@ -1,0 +1,57 @@
+import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
+import { Alert } from "react-native";
+import { showMessage } from "react-native-flash-message";
+import auth from "@react-native-firebase/auth"
+
+const useSignIn = () => {
+
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const navigation = useNavigation()
+
+    const onLoginPress = async () => {
+
+        try {
+            const userCredential = await auth().signInWithEmailAndPassword(email, password)
+            if (userCredential.user) {
+
+                navigation.navigate("Home");
+            } else {
+                Alert.alert("Failed to Login")
+            }
+
+        } catch (err: any) {
+
+            let errorMessage = ""
+
+            //error handling
+            if (err.code === "auth/invalid-credential") {
+                errorMessage = "Invalid email or Password"
+            } else if (err.code === "auth/user-not-found") {
+                errorMessage = "User Not Found"
+            } else {
+                errorMessage = "An error occurred during sign-in"
+            }
+
+            //flash message
+            showMessage({
+                type: "danger",
+                message: errorMessage
+            })
+        }
+    };
+
+
+    return {
+        email,
+        password,
+        setEmail,
+        setPassword,
+        navigation,
+        onLoginPress
+    }
+}
+
+export default useSignIn
