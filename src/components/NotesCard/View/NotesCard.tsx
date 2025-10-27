@@ -7,9 +7,9 @@ import useNotesCard from "../ViewModel/NotesCardViewModel";
 import { NotesCardProps } from "../Model/NotesCardProps";
 import { FC } from "react";
 
-const NotesCard : FC<NotesCardProps> = ({item}) => {
+const NotesCard : FC<NotesCardProps> = ({item, setReload}) => {
 
-  const {deleteNote} = useNotesCard()
+  const {deleteNote} = useNotesCard(setReload)
 
     return (
         <View style={styles.container}>
