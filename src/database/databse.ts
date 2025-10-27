@@ -40,12 +40,9 @@ export const initDB = async () => {
         );
     `);
 
-        await db.executeSql(`DROP TABLE IF EXISTS deleted_notes`)
-
         await db.executeSql(`
   CREATE TABLE IF NOT EXISTS deleted_notes (
     fireStoreId TEXT UNIQUE
-    id TEXT UNIQUE
   );
 `);
 

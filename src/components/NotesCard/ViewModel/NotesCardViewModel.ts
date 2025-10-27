@@ -48,18 +48,24 @@ const useNotesCard = (setReload) => {
       }
       else {
         // delete locally and add to new table
-
+        console.log("item in deletion", item)
         if (item.id) {
           await db?.executeSql(
             `INSERT OR IGNORE INTO deleted_notes (fireStoreId) VALUES (?)`,
             [item.id]
           )
-        }
 
-        await db?.executeSql(
-          `DELETE FROM notes WHERE fireStoreId = ? AND userId = ?`,
-          [item.id, user.uid]
-        )
+          await db?.executeSql(
+            `DELETE FROM notes WHERE fireStoreId = ? AND userId = ?`,
+            [item.id, user.uid]
+          )
+        } else {
+
+          await db?.executeSql(
+            `DELETE FROM notes WHERE text = ? AND userId = ?`,
+            [item.note, user.uid]
+          )
+        }
 
         showMessage({
           type: "info",
