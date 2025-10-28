@@ -4,11 +4,18 @@ import firestore from "@react-native-firebase/firestore"
 import NetInfo from "@react-native-community/netinfo"
 import { Note } from "../Model/NotesCardProps";
 import { initDB } from "../../../database/databse";
-import useHome from "../../../screens/Home/ViewModel/homeViewModel";
+import { useNavigation } from "@react-navigation/native";
 
 
 const useNotesCard = (setReload) => {
 
+  const navigation = useNavigation()
+
+  const onPressEdit = (item : Note) => {
+    navigation.navigate("EditNote",{
+      item : item
+    })
+  }
 
   const deleteNote = async (item: Note) => {
 
@@ -85,7 +92,8 @@ const useNotesCard = (setReload) => {
   }
 
   return {
-    deleteNote
+    deleteNote,
+    onPressEdit
   }
 }
 

@@ -2,7 +2,7 @@ import { StyleProp, ViewStyle } from "react-native";
 
 
 export interface AppTextInputProps {
-    title : string,
+    title? : string,
     value : string,
     onChangeText : (text : string) => void,
     secureTextEntry? : boolean,

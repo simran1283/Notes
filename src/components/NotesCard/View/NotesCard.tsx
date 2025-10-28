@@ -9,7 +9,7 @@ import { FC } from "react";
 
 const NotesCard : FC<NotesCardProps> = ({item, setReload}) => {
 
-  const {deleteNote} = useNotesCard(setReload)
+  const {deleteNote, onPressEdit} = useNotesCard(setReload)
 
     return (
         <View style={styles.container}>
@@ -17,7 +17,7 @@ const NotesCard : FC<NotesCardProps> = ({item, setReload}) => {
                 <Text>{item.note}</Text>
             </View>
             <View style={styles.buttonsContainer}>
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button}  onPress={()=> onPressEdit(item)}>
                     <Text style={{color : "white"}}>  Edit  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.button} onPress={()=> deleteNote(item)}>

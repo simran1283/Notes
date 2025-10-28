@@ -80,19 +80,51 @@ export const SyncOfflineNotes = async () => {
         for (let i = 0; i < rows.length; i++) {
             const note = rows.item(i)
 
-            const docRef = await firestore()
-                .collection("users")
-                .doc(userId)
-                .collection("notes")
-                .add({
-                    note: note.text,
-                    lastUpdated: note.lastUpdated,
-                    userId: note.userId,
-                })
+            // const docRef = await firestore()
+            // .collection("users")
+            // .doc(userId)
+            // .collection("notes")
+            // .add({
+            //     note: note.text,
+            //     lastUpdated: note.lastUpdated,
+            //     userId: note.userId,
+            // })
+
+            // If note already has a firestoreId, update it instead of adding a new one
+            if (note.fireStoreId) {
+                console.log(`Updating Firestore note: ${note.fireStoreId}`)
+                await firestore()
+                    .collection("users")
+                    .doc(userId)
+                    .collection("notes")
+                    .doc(note.fireStoreId)
+                    .update({
+                        note: note.text,
+                        lastUpdated: note.lastUpdated,
+                        userId: note.userId,
+                    })
+            } else {
+                console.log(`Adding new Firestore note for local id: ${note.id}`)
+                const docRef = await firestore()
+                    .collection("users")
+                    .doc(userId)
+                    .collection("notes")
+                    .add({
+                        note: note.text,
+                        lastUpdated: note.lastUpdated,
+                        userId: note.userId,
+                    })
+
+
+                await db?.executeSql(
+                    `UPDATE notes SET sync = 1, fireStoreId = ? WHERE id = ?`,
+                    [docRef.id, note.id]
+                )
+            }
 
             await db?.executeSql(
-                `UPDATE notes SET sync = 1, fireStoreId = ? WHERE id = ?`,
-                [docRef.id, note.id]
+                `UPDATE notes SET sync = 1 WHERE id = ?`,
+                [note.id]
             )
         }
 
