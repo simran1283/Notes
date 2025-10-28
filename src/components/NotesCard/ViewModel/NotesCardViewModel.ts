@@ -30,21 +30,33 @@ const useNotesCard = (setReload) => {
       const state = await NetInfo.fetch()
       const isOnline = state.isConnected
 
+      let firestoreId = item.id
+      if (!firestoreId) {
+        const res = await db?.executeSql(
+          `SELECT fireStoreId FROM notes WHERE id = ?`,
+          [item.localId]
+        )
+        const rows = res?.[0]?.rows
+        if (rows?.length > 0 && rows?.item(0).fireStoreId) {
+          firestoreId = rows?.item(0).fireStoreId
+        }
+      }
+
       if (isOnline) {
         // Delete from Firestore first
-        if (item.id) {
+        if (firestoreId) {
           await firestore()
             .collection("users")
             .doc(user.uid)
             .collection("notes")
-            .doc(item.id)
+            .doc(firestoreId)
             .delete()
         }
 
         // delete from SQLite
         await db?.executeSql(
           `DELETE FROM notes WHERE fireStoreId = ? AND userId = ?`,
-          [item.id, user.uid]
+          [firestoreId, user.uid]
         )
 
 
@@ -56,15 +68,15 @@ const useNotesCard = (setReload) => {
       else {
         // delete locally and add to new table
         console.log("item in deletion", item)
-        if (item.id) {
+        if (firestoreId) {
           await db?.executeSql(
             `INSERT OR IGNORE INTO deleted_notes (fireStoreId) VALUES (?)`,
-            [item.id]
+            [firestoreId]
           )
 
           await db?.executeSql(
             `DELETE FROM notes WHERE fireStoreId = ? AND userId = ?`,
-            [item.id, user.uid]
+            [firestoreId, user.uid]
           )
         } else {
 
