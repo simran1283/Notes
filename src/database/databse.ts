@@ -59,7 +59,12 @@ export const initDB = async () => {
 let isSyncing = false //Global flag to prevent duplicate runs
 
 export const SyncOfflineNotes = async () => {
+
     if (isSyncing) {
+        showMessage({
+            type : "info",
+            message  : "Syncing in Progress, Please Wait"
+        })
         console.log("Sync already in progress")
         return
     }
@@ -80,15 +85,6 @@ export const SyncOfflineNotes = async () => {
         for (let i = 0; i < rows.length; i++) {
             const note = rows.item(i)
 
-            // const docRef = await firestore()
-            // .collection("users")
-            // .doc(userId)
-            // .collection("notes")
-            // .add({
-            //     note: note.text,
-            //     lastUpdated: note.lastUpdated,
-            //     userId: note.userId,
-            // })
 
             // If note already has a firestoreId, update it instead of adding a new one
             if (note.fireStoreId) {

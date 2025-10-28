@@ -21,7 +21,19 @@ const useEditNote = (item: Note) => {
             const isOnline = state.isConnected
             const db = await initDB()
 
-            if (isOnline) {
+            let firestoreId = item.id
+            if (!firestoreId) {
+                const res = await db?.executeSql(
+                    `SELECT fireStoreId FROM notes WHERE id = ?`,
+                    [item.localId]
+                )
+                const rows = res?.[0]?.rows
+                if (rows?.length > 0 && rows?.item(0).fireStoreId) {
+                    firestoreId = rows?.item(0).fireStoreId
+                }
+            }
+
+            if (isOnline && firestoreId) {
                 // update in firebase
 
                 const user = auth().currentUser
@@ -29,7 +41,7 @@ const useEditNote = (item: Note) => {
                 await firestore().collection('users')
                     .doc(user?.uid)
                     .collection('notes')
-                    .doc(item.id)
+                    .doc(firestoreId)
                     .update({
                         note: editNote
                     })
@@ -38,7 +50,7 @@ const useEditNote = (item: Note) => {
                     `UPDATE notes 
            SET text = ?, lastUpdated = ?, sync = 1
            WHERE firestoreId = ?`,
-                    [editNote, Date.now(), item.id]
+                    [editNote, Date.now(), firestoreId]
                 );
 
                 showMessage({
@@ -52,18 +64,16 @@ const useEditNote = (item: Note) => {
                         `UPDATE notes 
                     SET text = ? , lastUpdated = ? , sync = 0
                     WHERE fireStoreId = ?`,
-                        [editNote, Date.now(), item.id]
+                        [editNote, Date.now(), firestoreId]
                     )
                 }
                 else {
 
-                    const localId = await db?.executeSql(
-                        `SELECT id FROM notes WHERE userId = ? AND text = ?`
-                    )
                     await db?.executeSql(
                         `UPDATE notes 
                         SET text = ? , lastUpdated = ? , sync = 0
-                        WHERE `
+                        WHERE id = ? `,
+                        [editNote, Date.now(), item.localId]
                     )
                 }
 

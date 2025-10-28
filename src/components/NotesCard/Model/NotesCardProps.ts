@@ -7,5 +7,6 @@ export type Note  = {
     id : string,
     note : string,
     lastUpdated : number,
-    userId : string
+    userId : string,
+    localId? : string
 }

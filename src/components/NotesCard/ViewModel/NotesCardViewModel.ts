@@ -11,9 +11,9 @@ const useNotesCard = (setReload) => {
 
   const navigation = useNavigation()
 
-  const onPressEdit = (item : Note) => {
-    navigation.navigate("EditNote",{
-      item : item
+  const onPressEdit = (item: Note) => {
+    navigation.navigate("EditNote", {
+      item: item
     })
   }
 
@@ -69,8 +69,8 @@ const useNotesCard = (setReload) => {
         } else {
 
           await db?.executeSql(
-            `DELETE FROM notes WHERE text = ? AND userId = ?`,
-            [item.note, user.uid]
+            `DELETE FROM notes WHERE id = ? AND userId = ?`,
+            [item.localId, user.uid]
           )
         }
 
