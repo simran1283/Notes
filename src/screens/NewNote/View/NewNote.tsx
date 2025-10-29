@@ -1,18 +1,27 @@
 import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
-import { StyleSheet, View } from "react-native"
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native"
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
 import useNewNote from "../ViewModel/NewNoteViewModel"
-
+import { useNavigation } from "@react-navigation/native"
+import Ionicons from "react-native-vector-icons/Ionicons"
 
 const NewNote = () => {
 
-    const { note, setNote, AddNotes } = useNewNote()
+    const { note, setNote, AddNotes, navigation, loading } = useNewNote()
 
-       return (
+    return (
         <View style={styles.container}>
+            <View style={{ alignSelf: "flex-start", marginBottom: vs(30), margin: vs(4) }}>
+                <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                    <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
+                </TouchableOpacity>
+            </View>
             <AppTextInput title="New Note" value={note} onChangeText={setNote} keyboardType="default" />
-            <AppButton title="Add" style={{ width: "50%" }} onPress={AddNotes} />
+            <AppButton title={loading ? <ActivityIndicator color="#ffffff" /> : "Add"}
+                style={{ width: "50%", marginTop: vs(10) }}
+                onPress={AddNotes}
+                disabled={loading ? true : false} />
         </View>
     )
 }

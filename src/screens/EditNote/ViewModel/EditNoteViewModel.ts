@@ -12,11 +12,12 @@ const useEditNote = (item: Note) => {
     const navigation = useNavigation()
 
     const [editNote, setEditNote] = useState(item.note)
+    const [loading, setLoading] = useState(false)
 
     const onSavePress = async () => {
 
         try {
-
+            setLoading(true)
             const state = await NetInfo.fetch()
             const isOnline = state.isConnected
             const db = await initDB()
@@ -43,7 +44,8 @@ const useEditNote = (item: Note) => {
                     .collection('notes')
                     .doc(firestoreId)
                     .update({
-                        note: editNote
+                        note: editNote,
+                        lastUpdated : Date.now()
                     })
 
                 await db?.executeSql(
@@ -92,13 +94,17 @@ const useEditNote = (item: Note) => {
                 message: "Error updating Note"
             })
         }
-        navigation.navigate("Home")
+        finally{
+            setLoading(false)
+            navigation.navigate("Home")
+        }
     }
 
     return {
         editNote,
         setEditNote,
-        onSavePress
+        onSavePress,
+        loading
     }
 }
 

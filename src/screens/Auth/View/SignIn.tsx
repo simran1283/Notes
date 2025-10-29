@@ -1,26 +1,29 @@
-import { Alert, StyleSheet, View } from "react-native"
+import { Text, StyleSheet, View, ActivityIndicator } from "react-native"
 import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
 import AppButton from "../../../components/AppButton/View/AppButton"
-import { useNavigation } from "@react-navigation/native"
 import { vs } from "react-native-size-matters"
-import auth from "@react-native-firebase/auth"
-import { showMessage } from "react-native-flash-message"
-import { useState } from "react"
 import useSignIn from "../ViewModel/SignInViewModel"
 
 
 const SignIn = () => {
 
-    const { email, password, setEmail, setPassword, navigation, onLoginPress } = useSignIn()
+    const { email, password, setEmail, setPassword, navigation, onLoginPress, isLoggingIn } = useSignIn()
 
     return (
         <View style={styles.container}>
             <View style={{ marginTop: vs(20) }}>
-                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail}/>
+                <View style={styles.textContainer}>
+                    <Text style={styles.title}>LOG IN</Text>
+                    <Text style={styles.subTitle}>Let's get to Work</Text>
+                </View>
+                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} />
                 <AppTextInput title="Password" value={password} keyboardType="default" secureTextEntry onChangeText={setPassword} />
             </View>
             <View style={{ marginTop: vs(50) }}>
-                <AppButton title="Login" onPress={onLoginPress} style={{ width: "80%" }} />
+                <AppButton title={isLoggingIn ? <ActivityIndicator color="#ffffff" /> : "Login"}
+                    onPress={onLoginPress}
+                    style={{ width: "80%", marginBottom: vs(20) }}
+                    disabled={isLoggingIn ? true : false} />
                 <AppButton title="Create Account" onPress={() => navigation.navigate("SignUp")} style={{ width: "80%" }} />
             </View>
         </View>
@@ -35,5 +38,23 @@ const styles = StyleSheet.create({
         flex: 1,
         margin: vs(10),
         padding: vs(5)
+    },
+    title: {
+        color: "#df5d88ff",
+        fontSize: vs(16),
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: vs(6)
+    },
+    subTitle: {
+        fontSize: vs(12),
+        fontWeight: "500",
+        textAlign: "center",
+        color: "grey"
+    },
+    textContainer: {
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginVertical: vs(40)
     }
 })

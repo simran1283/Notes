@@ -1,5 +1,5 @@
 import SQLite, { SQLiteDatabase } from "react-native-sqlite-storage"
-import firestore, { Timestamp } from "@react-native-firebase/firestore"
+import firestore from "@react-native-firebase/firestore"
 import auth from "@react-native-firebase/auth"
 import { showMessage } from "react-native-flash-message"
 

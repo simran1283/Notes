@@ -8,12 +8,16 @@ const useSignIn = () => {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isLoggingIn, setIsLoggingIn] = useState(false)
 
     const navigation = useNavigation()
 
     const onLoginPress = async () => {
 
+        if(isLoggingIn) return
+
         try {
+            setIsLoggingIn(true)
             const userCredential = await auth().signInWithEmailAndPassword(email, password)
             if (userCredential.user) {
 
@@ -41,6 +45,9 @@ const useSignIn = () => {
                 message: errorMessage
             })
         }
+        finally { 
+            setIsLoggingIn(false)
+        }
     };
 
 
@@ -50,7 +57,8 @@ const useSignIn = () => {
         setEmail,
         setPassword,
         navigation,
-        onLoginPress
+        onLoginPress,
+        isLoggingIn
     }
 }
 

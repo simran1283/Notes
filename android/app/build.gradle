@@ -121,3 +121,9 @@ dependencies {
 }
 
 apply plugin: "com.google.gms.google-services"
+
+project.ext.vectoricons = [
+    iconFontNames: [ 'Ionicons.ttf', 'MaterialIcons.ttf' ] // specify the ones you use
+]
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"

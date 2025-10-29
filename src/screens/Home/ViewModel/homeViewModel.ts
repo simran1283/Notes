@@ -37,7 +37,8 @@ const useHome = () => {
 
         setAllNotes(fetchedNotes.map(d => ({
           id: d.fireStoreId,
-          note: d.text
+          note: d.text,
+          lastUpdated : d.lastUpdated
         })));
 
         // Upsert into SQLite
@@ -72,7 +73,7 @@ const useHome = () => {
             for (let i = 0; i < rows.length; i++) {
               notes.push(rows.item(i))
             }
-            setAllNotes(notes.map(n => ({ id: n.fireStoreId, note: n.text, localId : n.id })));
+            setAllNotes(notes.map(n => ({ id: n.fireStoreId, note: n.text, localId : n.id, lastUpdated : n.lastUpdated })));
           }
         );
       });

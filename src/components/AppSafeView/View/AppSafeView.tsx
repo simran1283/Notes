@@ -17,11 +17,10 @@ const AppSafeView: FC<AppSafeViewProps> = ({ children, style }) => {
 export default AppSafeView
 
 const styles = StyleSheet.create({
-    safeView : {
-        flex : 1,
-        backgroundColor : "white"
+    safeView: {
+        flex: 1
     },
-    container : {
-        flex : 1
+    container: {
+        flex: 1
     }
 })

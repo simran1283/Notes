@@ -9,6 +9,7 @@ import firestore from "@react-native-firebase/firestore"
 const useNewNote = () => {
 
     const [note, setNote] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const navigation = useNavigation()
 
@@ -23,6 +24,7 @@ const useNewNote = () => {
         }
 
         try {
+            setLoading(true)
 
             const db = await initDB()
             const timestamp = Date.now()
@@ -60,9 +62,6 @@ const useNewNote = () => {
             }
 
             else {
-                // await db?.executeSql(`
-                //                INSERT OR REPLACE INTO notes (id,userId,fireStoreId,text,lastUpdated,sync) VALUES (?, ?, ?, ?, ?, ?)`,
-                //     [null, userId, null, note, timestamp, 0])
 
                 const existingOffline = await db?.executeSql(
                     `SELECT * FROM notes WHERE userId = ? AND text = ? AND sync = 0`,
@@ -95,12 +94,17 @@ const useNewNote = () => {
                 message: "Error Adding Notes"
             })
         }
+        finally {
+            setLoading(false)
+        }
     }
 
     return {
         note,
         setNote,
-        AddNotes
+        AddNotes,
+        navigation,
+        loading
     }
 }
 

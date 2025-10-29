@@ -9,12 +9,16 @@ const useSignUp = () => {
     const [userName, setUserName] = useState("")
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [isSigningUp, setIsSigningUp] = useState(false)
 
     const navigation = useNavigation()
 
     const onSignUpPress = async () => {
 
+        if(isSigningUp) return
+
         try {
+            setIsSigningUp(true)
             const userCredential = await auth().createUserWithEmailAndPassword(email, password)
             if (userCredential.user) {
                 const { user } = userCredential;
@@ -53,6 +57,9 @@ const useSignUp = () => {
                 message: errorMessage
             })
         }
+        finally{
+            setIsSigningUp(false)
+        }
 
     }
 
@@ -64,7 +71,8 @@ const useSignUp = () => {
         setPassword,
         setEmail,
         navigation,
-        onSignUpPress
+        onSignUpPress,
+        isSigningUp
     }
 }
 
