@@ -27,8 +27,6 @@ export const initDB = async () => {
 
         db = await SQLite.openDatabase({ name: "notes.db", location: "default" })
 
-        // await db.executeSql(`DROP TABLE IF EXISTS notes`);
-
         await db.executeSql(`
         CREATE TABLE IF NOT EXISTS notes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,83 +54,91 @@ export const initDB = async () => {
 
 
 
-let isSyncing = false //Global flag to prevent duplicate runs
+let isSyncing = false // Global flag to prevent duplicate runs
 
 export const SyncOfflineNotes = async () => {
-
     if (isSyncing) {
-        showMessage({
-            type : "info",
-            message  : "Syncing in Progress, Please Wait"
-        })
+        // showMessage({
+        //     type: "info",
+        //     message: "Syncing in progress, please wait...",
+        // })
         console.log("Sync already in progress")
         return
     }
 
+    const user = auth().currentUser
+    if (!user) return
+
     try {
+        isSyncing = true
         const db = await initDB()
-        const userId = auth().currentUser?.uid
-        if (!userId) return
+        const userId = user.uid
 
-        isSyncing = true //  Lock sync
-
+        // Fetch unsynced notes
         const results = await db?.executeSql(
             `SELECT * FROM notes WHERE userId = ? AND sync = 0`,
             [userId]
         )
         const rows = results[0].rows
 
+        if (rows.length === 0) {
+            console.log("No offline notes to sync.")
+            return
+        }
+
         for (let i = 0; i < rows.length; i++) {
             const note = rows.item(i)
+            const noteRef = firestore()
+                .collection("users")
+                .doc(userId)
+                .collection("notes")
 
+            try {
+                if (note.fireStoreId) {
+                    console.log(`Updating Firestore note: ${note.fireStoreId}`)
+                    await noteRef.doc(note.fireStoreId).set(
+                        {
+                            note: note.text,
+                            lastUpdated: note.lastUpdated,
+                            userId: note.userId,
+                        },
+                        { merge: true } // <-- safer than update()
+                    )
+                } else {
 
-            // If note already has a firestoreId, update it instead of adding a new one
-            if (note.fireStoreId) {
-                console.log(`Updating Firestore note: ${note.fireStoreId}`)
-                await firestore()
-                    .collection("users")
-                    .doc(userId)
-                    .collection("notes")
-                    .doc(note.fireStoreId)
-                    .update({
-                        note: note.text,
-                        lastUpdated: note.lastUpdated,
-                        userId: note.userId,
-                    })
-            } else {
-                console.log(`Adding new Firestore note for local id: ${note.id}`)
-                const docRef = await firestore()
-                    .collection("users")
-                    .doc(userId)
-                    .collection("notes")
-                    .add({
-                        note: note.text,
-                        lastUpdated: note.lastUpdated,
-                        userId: note.userId,
-                    })
+                    console.log(`Adding new Firestore note for local id: ${note.id}`)
+                    const docRef = await noteRef
+                        .add({
+                            note: note.text,
+                            lastUpdated: note.lastUpdated,
+                            userId: note.userId,
+                        })
 
+                    // ✅ Make sure to update the correct local row immediately
+                    await db?.executeSql(
+                        `UPDATE notes SET fireStoreId = ?, sync = 1 WHERE id = ?`,
+                        [docRef.id, note.id]
+                    )
 
-                await db?.executeSql(
-                    `UPDATE notes SET sync = 1, fireStoreId = ? WHERE id = ?`,
-                    [docRef.id, note.id]
+                    console.log(`Firestore ID ${docRef.id} set for local note ${note.id}`)
+
+                }
+
+                // Mark note as synced safely (even for updates)
+                await db.executeSql(
+                    `UPDATE notes SET sync = 1 WHERE id = ?`,
+                    [note.id]
                 )
+
+            } catch (err) {
+                console.log("Error syncing individual note:", err)
             }
-
-            await db?.executeSql(
-                `UPDATE notes SET sync = 1 WHERE id = ?`,
-                [note.id]
-            )
         }
 
-        if (rows.length > 0) {
-            showMessage({
-                type: "success",
-                message: `${rows.length} notes synced successfully!`,
-            })
-        } else {
-            console.log("No offline notes to sync.")
-        }
-
+        showMessage({
+            type: "success",
+            message: `${rows.length} notes synced successfully!`,
+        })
     } catch (error) {
         console.log("Error syncing notes:", error)
         showMessage({
@@ -140,9 +146,10 @@ export const SyncOfflineNotes = async () => {
             message: "Error syncing notes",
         })
     } finally {
-        isSyncing = false // Unlock sync after done
+        isSyncing = false
     }
 }
+
 
 
 export const SyncDeletions = async () => {
@@ -164,7 +171,7 @@ export const SyncDeletions = async () => {
                     .doc(fireStoreId)
                     .delete()
 
-                // Remove from deleted_notes after successful sync
+                //Remove from deleted_notes after successful sync
                 await db?.executeSql(`DELETE FROM deleted_notes WHERE fireStoreId = ?`, [fireStoreId])
             } catch (err) {
                 console.log("Error syncing deletion:", err)

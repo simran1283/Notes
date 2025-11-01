@@ -44,6 +44,7 @@ const useNewNote = () => {
                         note: note,
                         lastUpdated: timestamp,
                         userId: userId,
+                        sync : 1
                     });
 
                 const existing = await db?.executeSql(

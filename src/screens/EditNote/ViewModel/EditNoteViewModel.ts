@@ -45,7 +45,8 @@ const useEditNote = (item: Note) => {
                     .doc(firestoreId)
                     .update({
                         note: editNote,
-                        lastUpdated : Date.now()
+                        lastUpdated : Date.now(),
+                        sync : 1
                     })
 
                 await db?.executeSql(
