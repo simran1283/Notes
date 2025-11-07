@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import auth from "@react-native-firebase/auth"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const useSignIn = () => {
 
@@ -14,14 +15,17 @@ const useSignIn = () => {
 
     const onLoginPress = async () => {
 
-        if(isLoggingIn) return
+        if (isLoggingIn) return
 
         try {
             setIsLoggingIn(true)
             const userCredential = await auth().signInWithEmailAndPassword(email, password)
             if (userCredential.user) {
-
-                navigation.navigate("Home");
+                AsyncStorage.setItem('user', JSON.stringify(userCredential.user))
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "Home" }],
+                });
             } else {
                 Alert.alert("Failed to Login")
             }
@@ -45,7 +49,7 @@ const useSignIn = () => {
                 message: errorMessage
             })
         }
-        finally { 
+        finally {
             setIsLoggingIn(false)
         }
     };

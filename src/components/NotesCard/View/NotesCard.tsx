@@ -18,7 +18,7 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload }) => {
             <View style={styles.container}>
                 <View style={styles.statusContainer}>
                     <View style={styles.titleContainer}>
-                    <Text style={styles.title} numberOfLines={2}>{item.note}</Text>
+                    <Text style={styles.title} numberOfLines={3}>{item.note}</Text>
                 </View>
                 <View>
                     {item.sync == 0
@@ -48,11 +48,14 @@ export default NotesCard
 
 const styles = StyleSheet.create({
     outerContainer: {
-        flex: 1
+        flex: 1,
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center"
     },
     container: {
         height: "auto",
-        width: vs(290),
+        width: "100%",
         marginVertical: vs(6),
         borderRadius: vs(10),
         backgroundColor: "#ffffff",

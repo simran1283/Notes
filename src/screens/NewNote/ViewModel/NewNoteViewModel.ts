@@ -44,7 +44,7 @@ const useNewNote = () => {
                         note: note,
                         lastUpdated: timestamp,
                         userId: userId,
-                        sync : 1
+                        sync: 1
                     });
 
                 const existing = await db?.executeSql(
@@ -85,7 +85,10 @@ const useNewNote = () => {
                 message: "Note added successfully!",
             });
 
-            navigation.navigate("Home")
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "Home" }],
+            })
         }
         catch (error) {
             console.log(error)

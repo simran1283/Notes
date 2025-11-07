@@ -1,25 +1,30 @@
-import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import {
+    ActivityIndicator,
+    FlatList,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native"
 import NotesCard from "../../../components/NotesCard/View/NotesCard"
 import NetInfo from "@react-native-community/netinfo"
-import { vs } from "react-native-size-matters"
+import { ms, vs, s } from "react-native-size-matters"
 import { useEffect, useState } from "react"
 import useHome from "../ViewModel/homeViewModel"
 import Ionicons from "react-native-vector-icons/Ionicons"
 import EmptyNotes from "../../../components/EmptyNotes/View/EmptyNotes"
 import { showMessage } from "react-native-flash-message"
-import { useNavigation} from "@react-navigation/native"
+import { useNavigation } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 
 const Home = () => {
 
-    const { allNotes, setAllNotes, fetchNotes, handleSync, isSyncingIn } = useHome()
-
+    const { allNotes, setAllNotes, fetchNotes, handleSync } = useHome()
     const [reload, setReload] = useState(false)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [lastSync, setLastSync] = useState("")
-
     const navigation = useNavigation()
-
 
     useEffect(() => {
         const unsubscribe = NetInfo.addEventListener(state => {
@@ -30,99 +35,129 @@ const Home = () => {
         return () => unsubscribe()
     }, [])
 
-
-
     useEffect(() => {
         const getNotes = async () => {
             try {
                 setLoading(true)
                 await fetchNotes(setAllNotes)
-                const lastSyncTime = await AsyncStorage.getItem('lastSync')
+                const lastSyncTime = await AsyncStorage.getItem("lastSync")
                 setLastSync(lastSyncTime)
-
             } catch (error) {
                 showMessage({
                     type: "danger",
-                    message: error
+                    message: "Error fetching notes",
                 })
-            }
-            finally {
+            } finally {
                 setLoading(false)
             }
         }
-
         getNotes()
     }, [reload])
 
-
-
-
     if (loading) {
         return (
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#df5d88ff" />
             </View>
         )
     }
 
-
-    if (allNotes.length == 0) {
-        return (
-            <EmptyNotes />
-        )
+    if (allNotes.length === 0) {
+        return <EmptyNotes />
     }
-    console.log("In home screen ")
-
 
     return (
-
         <View style={styles.container}>
-            <View style={{ alignSelf: "flex-start", margin: vs(10), marginBottom: vs(5) }}>
-                <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
-                    <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.syncText}>
+                    Last Synced: {lastSync || "Not yet synced"}
+                </Text>
+                <TouchableOpacity
+                    style={styles.logoutBtn}
+                    onPress={async () => {
+                        await AsyncStorage.removeItem("user")
+                        navigation.reset({
+                            index: 0,
+                            routes: [{ name: "SignIn" }],
+                        });
+                    }}
+                >
+                    <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
                 </TouchableOpacity>
             </View>
 
-            {
-                isSyncingIn ?
-                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                        <ActivityIndicator size={"large"} color="#df5d88ff" />
-                        <Text style={{ fontSize: vs(15), color: "grey" }}>Syncing in Progress......</Text>
-                    </View> :
-                    <>
-                        <Text style={{ color: "#000000" }}>Last Synced : {lastSync}</Text>
-                        <FlatList
-                            data={allNotes}
-                            renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
-                            keyExtractor={(item) => item.id} />
-                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("NewNote")}>
-                            <Ionicons name="add" color="#ffffff" size={24} />
-                        </TouchableOpacity>
-                    </>
-            }
+            {/* Notes List */}
+            <FlatList
+                data={allNotes}
+                renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.listContainer}
+            />
 
+            {/* Add Note Button */}
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate("NewNote")}
+            >
+                <Ionicons name="add" color="#fff" size={ms(26)} />
+            </TouchableOpacity>
         </View>
     )
 }
-
-
 
 export default Home
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "space-between"
+        paddingHorizontal: s(15),
+        paddingTop: vs(10),
     },
-    button: {
-        backgroundColor: "#df5d88ff",
-        padding: vs(5),
-        borderRadius: vs(5),
+
+    loaderContainer: {
+        flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        alignSelf: "flex-end",
-        marginHorizontal: vs(20),
-        marginVertical: vs(10)
-    }
+    },
+
+    header: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: vs(10),
+        paddingVertical: vs(5),
+    },
+
+    syncText: {
+        fontSize: ms(13),
+        color: "#333",
+        flexShrink: 1,
+    },
+
+    logoutBtn: {
+        padding: s(6),
+    },
+
+    listContainer: {
+        paddingBottom: vs(60), // space for floating button
+    },
+
+    addButton: {
+        position: "absolute",
+        bottom: vs(20),
+        right: s(20),
+        backgroundColor: "#df5d88ff",
+        width: ms(50),
+        height: ms(50),
+        borderRadius: ms(25),
+        alignItems: "center",
+        justifyContent: "center",
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 3,
+        elevation: 5,
+    },
 })

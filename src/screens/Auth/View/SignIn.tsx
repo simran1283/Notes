@@ -16,15 +16,20 @@ const SignIn = () => {
                     <Text style={styles.title}>LOG IN</Text>
                     <Text style={styles.subTitle}>Let's get to Work</Text>
                 </View>
-                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} />
-                <AppTextInput title="Password" value={password} keyboardType="default" secureTextEntry onChangeText={setPassword} />
+                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} multiline={false}/>
+                <AppTextInput title="Password" value={password} keyboardType="default" onChangeText={setPassword} secureTextEntry={true} multiline={false}/>
             </View>
             <View style={{ marginTop: vs(50) }}>
                 <AppButton title={isLoggingIn ? <ActivityIndicator color="#ffffff" /> : "Login"}
                     onPress={onLoginPress}
                     style={{ width: "80%", marginBottom: vs(20) }}
                     disabled={isLoggingIn ? true : false} />
-                <AppButton title="Create Account" onPress={() => navigation.navigate("SignUp")} style={{ width: "80%" }} />
+                <AppButton title="Create Account" onPress={() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "SignUp" }],
+                    });
+                }} style={{ width: "80%" }} />
             </View>
         </View>
     )

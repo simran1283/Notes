@@ -1,6 +1,8 @@
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useNavigation } from "@react-navigation/native"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import { vs } from "react-native-size-matters"
+import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import Ionicons from "react-native-vector-icons/Ionicons"
 
 const EmptyNotes = () => {
@@ -9,9 +11,16 @@ const EmptyNotes = () => {
 
     return (
         <View style={styles.container}>
-            <View style={{ alignSelf: "flex-start", margin: vs(10) }}>
-                <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
-                    <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
+            <View style={{ alignSelf: "flex-end", margin: vs(10) }}>
+                <TouchableOpacity onPress={async () => {
+                    await AsyncStorage.removeItem("user")
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "SignIn" }],
+                    });
+                }}>
+
+                    <MaterialIcons name="logout" size={24} color="#df5d88ff" />
                 </TouchableOpacity>
             </View>
             <View>

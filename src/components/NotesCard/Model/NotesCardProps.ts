@@ -1,5 +1,6 @@
 export interface NotesCardProps {
-    item : Note
+    item : Note,
+    setReload : boolean
 } 
 
 

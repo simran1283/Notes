@@ -15,7 +15,7 @@ const useSignUp = () => {
 
     const onSignUpPress = async () => {
 
-        if(isSigningUp) return
+        if (isSigningUp) return
 
         try {
             setIsSigningUp(true)
@@ -32,7 +32,10 @@ const useSignUp = () => {
                     type: "success",
                     message: "Account created successfully!",
                 });
-                navigation.navigate("SignIn")
+                navigation.reset({
+                    index: 0,
+                    routes: [{ name: "Home" }],
+                });
             }
             else {
                 console.log("Failed to create Account")
@@ -57,7 +60,7 @@ const useSignUp = () => {
                 message: errorMessage
             })
         }
-        finally{
+        finally {
             setIsSigningUp(false)
         }
 

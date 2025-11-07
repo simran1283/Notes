@@ -105,6 +105,38 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    signingConfigs {
+    release {
+        if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+            storeFile file(MYAPP_UPLOAD_STORE_FILE)
+            storePassword MYAPP_UPLOAD_STORE_PASSWORD
+            keyAlias MYAPP_UPLOAD_KEY_ALIAS
+            keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+        }
+    }
+}
+
+buildTypes {
+    release {
+        signingConfig signingConfigs.release
+        minifyEnabled true
+        shrinkResources true
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+}
+applicationVariants.all { variant ->
+    variant.outputs.all {
+        def appName = "MyNotesApp"
+        def versionName = variant.versionName
+        def outputFileName = "${appName}_v${versionName}_${variant.name}.apk"
+        outputFileName = outputFileName.replace(" ", "_")
+        outputFileName = outputFileName.toLowerCase()
+        outputFileName = outputFileName
+    }
+}
+
+
 }
 
 dependencies {

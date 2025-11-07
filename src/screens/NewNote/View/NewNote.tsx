@@ -3,7 +3,6 @@ import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-nat
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
 import useNewNote from "../ViewModel/NewNoteViewModel"
-import { useNavigation } from "@react-navigation/native"
 import Ionicons from "react-native-vector-icons/Ionicons"
 
 const NewNote = () => {
@@ -13,7 +12,12 @@ const NewNote = () => {
     return (
         <View style={styles.container}>
             <View style={{ alignSelf: "flex-start", marginBottom: vs(30), margin: vs(4) }}>
-                <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                <TouchableOpacity onPress={() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "Home" }],
+                    });
+                }}>
                     <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
                 </TouchableOpacity>
             </View>

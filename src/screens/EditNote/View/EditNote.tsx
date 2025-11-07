@@ -17,12 +17,17 @@ const EditNote = () => {
     return (
         <View style={styles.container}>
             <View style={{ alignSelf: "flex-start", marginBottom: vs(30), margin: vs(4) }}>
-                <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                <TouchableOpacity onPress={() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "Home" }],
+                    });
+                }}>
                     <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
                 </TouchableOpacity>
             </View>
             <AppTextInput value={editNote} onChangeText={setEditNote} keyboardType="default" />
-            <AppButton title={loading ? <ActivityIndicator color="#ffffff"/> : "Save"} style={{ width: "50%", marginTop : vs(10) }} onPress={() => onSavePress()} disabled={loading ? true : false}/>
+            <AppButton title={loading ? <ActivityIndicator color="#ffffff" /> : "Save"} style={{ width: "50%", marginTop: vs(10) }} onPress={() => onSavePress()} disabled={loading ? true : false} />
         </View>
     )
 }

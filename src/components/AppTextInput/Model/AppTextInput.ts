@@ -7,5 +7,6 @@ export interface AppTextInputProps {
     onChangeText : (text : string) => void,
     secureTextEntry? : boolean,
     keyboardType : "default" | "numeric" | "email-address",
-    style? : StyleProp<ViewStyle>
+    style? : StyleProp<ViewStyle>,
+    multiline?: boolean
 }
