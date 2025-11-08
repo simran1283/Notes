@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>org.reactjs.native.example.Notes</string>
+	<string>com.notes</string>
 	<key>PROJECT_ID</key>
 	<string>notes-aafe8</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:206735911499:ios:c342f78209e2b921093bce</string>
+	<string>1:206735911499:ios:0b3f9ac09e942d6a093bce</string>
 </dict>
 </plist>

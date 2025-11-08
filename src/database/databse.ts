@@ -25,7 +25,7 @@ export const initDB = async () => {
 
     try {
 
-        db = await SQLite.openDatabase({ name: "notes.db", location: "default" })
+        db = await SQLite.openDatabase({ name: "notes.db", location: 'Documents', })
 
         await db.executeSql(`
         CREATE TABLE IF NOT EXISTS notes(
