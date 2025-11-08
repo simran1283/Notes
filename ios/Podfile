@@ -48,6 +48,7 @@ if linkage != nil
 end
 
 target 'Notes' do
+  use_modular_headers!
   config = use_native_modules!
 
   use_react_native!(
