@@ -69,7 +69,6 @@ target 'Notes' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
     
     # Set deployment target for all pods
     installer.pods_project.targets.each do |target|
