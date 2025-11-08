@@ -57,6 +57,9 @@ target 'Notes' do
     :hermes_enabled => true
   )
 
+  # Explicitly specify Yoga version for RN 0.82.1
+  pod 'Yoga', :path => '../node_modules/react-native/ReactCommon/yoga', :modular_headers => true
+
   # ✅ Firebase pods for iOS
   pod 'Firebase/Core'
   pod 'Firebase/Auth'
