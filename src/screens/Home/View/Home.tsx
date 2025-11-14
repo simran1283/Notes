@@ -67,53 +67,114 @@ const Home = () => {
     }
 
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={styles.syncText}>
-                    Last Synced: {lastSync || "Not yet synced"}
-                </Text>
+        <View style={styles.safeContainer}>
+            <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={styles.syncText}>
+                        Last Synced: {lastSync || "Not yet synced"}
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.logoutBtn}
+                        onPress={async () => {
+                            await AsyncStorage.removeItem("user")
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: "SignIn" }],
+                            });
+                        }}
+                    >
+                        <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* Notes List */}
+                <FlatList
+                    data={allNotes}
+                    renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
+                    keyExtractor={(item) => item.id}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.listContainer}
+                />
+
+                {/* Add Note Button */}
                 <TouchableOpacity
-                    style={styles.logoutBtn}
-                    onPress={async () => {
-                        await AsyncStorage.removeItem("user")
-                        navigation.reset({
-                            index: 0,
-                            routes: [{ name: "SignIn" }],
-                        });
-                    }}
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate("NewNote")}
                 >
-                    <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
+                    <Ionicons name="add" color="#fff" size={ms(26)} />
                 </TouchableOpacity>
             </View>
-
-            {/* Notes List */}
-            <FlatList
-                data={allNotes}
-                renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.listContainer}
-            />
-
-            {/* Add Note Button */}
-            <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => navigation.navigate("NewNote")}
-            >
-                <Ionicons name="add" color="#fff" size={ms(26)} />
-            </TouchableOpacity>
-        </View>
+         </View>
     )
 }
 
 export default Home
 
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//         paddingHorizontal: s(15),
+//         paddingTop: vs(10),
+//     },
+
+//     loaderContainer: {
+//         flex: 1,
+//         alignItems: "center",
+//         justifyContent: "center",
+//     },
+
+//     header: {
+//         flexDirection: "row",
+//         alignItems: "center",
+//         justifyContent: "space-between",
+//         marginBottom: vs(10),
+//         paddingVertical: vs(5),
+//     },
+
+//     syncText: {
+//         fontSize: ms(13),
+//         color: "#333",
+//         flexShrink: 1,
+//     },
+
+//     logoutBtn: {
+//         padding: s(6),
+//     },
+
+//     listContainer: {
+//         paddingBottom: vs(60), // space for floating button
+//     },
+
+//     addButton: {
+//         position: "absolute",
+//         bottom: vs(20),
+//         right: s(20),
+//         backgroundColor: "#df5d88ff",
+//         width: ms(50),
+//         height: ms(50),
+//         borderRadius: ms(25),
+//         alignItems: "center",
+//         justifyContent: "center",
+//         shadowColor: "#000",
+//         shadowOpacity: 0.2,
+//         shadowOffset: { width: 0, height: 2 },
+//         shadowRadius: 3,
+//         elevation: 5,
+//     },
+// })
+
+
 const styles = StyleSheet.create({
+    safeContainer: {
+        flex: 1,
+        paddingTop: vs(5),
+    },
+
     container: {
         flex: 1,
         paddingHorizontal: s(15),
-        paddingTop: vs(10),
+        paddingTop: vs(5),
     },
 
     loaderContainer: {
@@ -127,21 +188,25 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: vs(10),
-        paddingVertical: vs(5),
+        paddingVertical: vs(4),
+        paddingHorizontal: s(4),
     },
 
     syncText: {
         fontSize: ms(13),
         color: "#333",
-        flexShrink: 1,
+        flexShrink: 1,         
+        maxWidth: "80%",       
     },
 
     logoutBtn: {
-        padding: s(6),
+        padding: s(8),         
     },
 
     listContainer: {
-        paddingBottom: vs(60), // space for floating button
+        paddingBottom: vs(90), 
+        paddingTop: vs(5),
+        padding : vs(5)
     },
 
     addButton: {
@@ -149,15 +214,19 @@ const styles = StyleSheet.create({
         bottom: vs(20),
         right: s(20),
         backgroundColor: "#df5d88ff",
-        width: ms(50),
-        height: ms(50),
-        borderRadius: ms(25),
+        width: ms(52),
+        height: ms(52),
+        borderRadius: ms(26),
         alignItems: "center",
         justifyContent: "center",
+
+        // iOS shadow
         shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 3,
-        elevation: 5,
+        shadowOpacity: 0.15,
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 4,
+
+        // Android elevation
+        elevation: .5,
     },
 })
