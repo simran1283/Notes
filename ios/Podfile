@@ -1,81 +1,349 @@
-# # Resolve react_native_pods.rb with node to allow for hoisting
-# require Pod::Executable.execute_command('node', ['-p',
-#   'require.resolve(
-#     "react-native/scripts/react_native_pods.rb",
-#     {paths: [process.argv[1]]},
-#   )', __dir__]).strip
-
-# platform :ios, min_ios_version_supported
-# prepare_react_native_project!
-
-# linkage = ENV['USE_FRAMEWORKS']
-# if linkage != nil
-#   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-#   use_frameworks! :linkage => linkage.to_sym
-# end
+# platform :ios, '15.1'
 
 # target 'Notes' do
+#   use_frameworks! :linkage => :static
+
+#   require_relative '../node_modules/react-native/scripts/react_native_pods'
+
 #   config = use_native_modules!
 
 #   use_react_native!(
 #     :path => config[:reactNativePath],
-#     # An absolute path to your application root.
-#     :app_path => "#{Pod::Config.instance.installation_root}/.."
-#   )
+#     :hermes_enabled => true,
+#     :fabric_enabled => false
+#   )    
 
-#   post_install do |installer|
-#     react_native_post_install(
-#       installer,
-#       config[:reactNativePath],
-#       :mac_catalyst_enabled => false,
-#       # :ccache_enabled => true
-#     )
+#   # Firebase (only what you use)
+#   pod 'FirebaseCore'
+#   pod 'FirebaseCoreInternal'
+#   pod 'FirebaseCoreExtension'
+#   pod 'FirebaseAuth'
+#   pod 'FirebaseFirestore'
+
+#   # Must expose module maps for Swift
+#   pod 'GoogleUtilities',         :modular_headers => true
+#   pod 'PromisesObjC',            :modular_headers => true
+#   pod 'gRPC-Core',               :modular_headers => true
+#   pod 'gRPC-C++',                :modular_headers => true
+#   pod 'FirebaseAuthInterop',     :modular_headers => true
+#   pod 'FirebaseAppCheckInterop', :modular_headers => true
+#   pod 'RecaptchaInterop',        :modular_headers => true
+# end
+
+# post_install do |installer|
+#   # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+#   react_native_post_install(installer)
+  
+#   # Save the project before our modifications to ensure we're working with the latest state
+#   installer.pods_project.save
+
+#   # Set minimum iOS deployment target to 15.1 for all pods
+#   # Force disable Fabric/New Architecture EVERYWHERE
+#   installer.pods_project.targets.each do |target|
+#     target.build_configurations.each do |config|
+#       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+#       config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+#       config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+#       # Force disable Fabric/New Architecture - ALL POSSIBLE SETTINGS
+#       config.build_settings['USE_FABRIC'] = 'NO'
+#       config.build_settings['RCT_NEW_ARCH_ENABLED'] = '0'
+#       config.build_settings['RCT_NEW_ARCH_ENABLED'] = 'NO'
+#       config.build_settings['RCT_DYNAMIC_FRAMEWORKS'] = 'NO'
+#       config.build_settings['RCT_USE_HERMES'] = 'YES'
+#       # Remove any New Architecture preprocessor definitions
+#       if config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+#         config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].reject { |d| d.include?('RCT_NEW_ARCH_ENABLED') || d.include?('USE_FABRIC') }
+#       end
+#       # Ensure New Arch is not enabled via other flags
+#       if config.build_settings['OTHER_CPLUSPLUSFLAGS']
+#         flags = config.build_settings['OTHER_CPLUSPLUSFLAGS']
+#         flags = flags.is_a?(Array) ? flags : [flags]
+#         config.build_settings['OTHER_CPLUSPLUSFLAGS'] = flags.reject { |f| f.to_s.include?('RCT_NEW_ARCH_ENABLED') || f.to_s.include?('USE_FABRIC') }
+#       end
+#     end
+    
+#     # Fix hermes-engine script phase issues
+#     # This fixes the "command not found" error that occurs when the script has empty lines or colon commands
+#     if target.name == 'hermes-engine'
+#       target.build_phases.each do |phase|
+#         if phase.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
+#           # Set shell path to bash for better compatibility
+#           phase.shell_path = '/bin/bash'
+          
+#           # Get the original script content
+#           original_script = phase.shell_script.to_s
+          
+#           if original_script && !original_script.strip.empty?
+#             # Clean up the script: remove empty lines, standalone colons, and fix common issues
+#             lines = original_script.split("\n")
+            
+#             # Remove empty lines, lines with only whitespace, standalone colon commands, and shebangs
+#             # Also remove lines that are just whitespace or contain only a colon
+#             # This is critical to prevent "command not found" errors
+#             # We'll add our own shebang later, so remove any existing ones
+#             cleaned_lines = lines.reject do |line|
+#               stripped = line.strip
+#               # Remove empty lines, whitespace-only lines, standalone colons, and shebangs
+#               stripped.empty? || stripped == ':' || stripped.match?(/^\s*:\s*$/) || stripped.match?(/^\s+$/) || stripped.start_with?('#!')
+#             end.compact.reject(&:nil?)
+            
+#             # If we have any valid lines left, reconstruct the script
+#             if cleaned_lines.any?
+#               # Build the new script with proper error handling
+#               new_script_lines = []
+              
+#               # Always add our own shebang first (we've already removed any existing ones)
+#               new_script_lines << '#!/bin/bash'
+              
+#               # Add error handling
+#               new_script_lines << 'set +e'  # Don't exit on error
+              
+#               # Add the cleaned script lines, ensuring no empty lines, colons, or shebangs
+#               # (we've already removed shebangs in the cleaning step above)
+#               cleaned_lines.each do |line|
+#                 stripped = line.strip
+#                 # Skip empty lines, colons, whitespace-only lines, and any remaining shebang lines
+#                 unless stripped.empty? || stripped == ':' || stripped.start_with?('#!') || stripped.match?(/^\s+$/)
+#                   new_script_lines << line
+#                 end
+#               end
+              
+#               # Ensure we always exit successfully at the end
+#               unless new_script_lines.last&.include?('exit')
+#                 new_script_lines << 'exit 0'
+#               end
+              
+#               # Reconstruct the script with proper newlines (no empty lines or whitespace-only lines)
+#               # Filter out any remaining empty, whitespace-only, or colon-only lines
+#               final_script = new_script_lines.reject do |l|
+#                 l.nil? || l.strip.empty? || l.strip == ':' || l.strip.match?(/^\s+$/)
+#               end
+              
+#               # Join with newlines and ensure we have exactly one shebang at the start
+#               script_content = final_script.join("\n").strip
+#               # Remove ALL shebangs first (we'll add one back)
+#               script_content = script_content.gsub(/^#!/m, '').gsub(/\n#!/, "\n").strip
+#               # Ensure we have exactly one shebang at the very beginning
+#               script_content = "#!/bin/bash\n" + script_content unless script_content.start_with?('#!/')
+#               phase.shell_script = script_content + "\n"
+#             else
+#               # If script is empty after cleaning, provide a minimal no-op script
+#               phase.shell_script = "#!/bin/bash\nset +e\nexit 0\n"
+#             end
+#           else
+#             # If script is empty, provide a minimal no-op script
+#             phase.shell_script = "#!/bin/bash\nset +e\nexit 0\n"
+#           end
+          
+#           # Ensure the script doesn't show output in build log (optional, reduces noise)
+#           phase.show_env_vars_in_log = '0'
+#         end
+#       end
+#     end
+#   end
+  
+#   # Also set USE_FABRIC=NO for the main Notes target and ALL user project targets
+#   installer.aggregate_targets.each do |aggregate_target|
+#     aggregate_target.user_project.targets.each do |target|
+#       target.build_configurations.each do |config|
+#         # Force disable New Architecture - ALL POSSIBLE SETTINGS
+#         config.build_settings['USE_FABRIC'] = 'NO'
+#         config.build_settings['RCT_NEW_ARCH_ENABLED'] = '0'
+#         config.build_settings['RCT_NEW_ARCH_ENABLED'] = 'NO'
+#         config.build_settings['RCT_DYNAMIC_FRAMEWORKS'] = 'NO'
+#         config.build_settings['RCT_USE_HERMES'] = 'YES'
+#         # Remove any New Architecture preprocessor definitions
+#         if config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+#           config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].reject { |d| d.include?('RCT_NEW_ARCH_ENABLED') || d.include?('USE_FABRIC') }
+#         end
+#         # Ensure New Arch is not enabled via other flags
+#         if config.build_settings['OTHER_CPLUSPLUSFLAGS']
+#           flags = config.build_settings['OTHER_CPLUSPLUSFLAGS']
+#           flags = flags.is_a?(Array) ? flags : [flags]
+#           config.build_settings['OTHER_CPLUSPLUSFLAGS'] = flags.reject { |f| f.to_s.include?('RCT_NEW_ARCH_ENABLED') || f.to_s.include?('USE_FABRIC') }
+#         end
+#       end
+#     end
+#   end
+  
+#   # Also disable New Architecture in the main Notes project file directly
+#   installer.pods_project.build_configurations.each do |config|
+#     config.build_settings['USE_FABRIC'] = 'NO'
+#     config.build_settings['RCT_NEW_ARCH_ENABLED'] = '0'
+#     config.build_settings['RCT_NEW_ARCH_ENABLED'] = 'NO'
+#     config.build_settings['RCT_DYNAMIC_FRAMEWORKS'] = 'NO'
+#   end
+  
+#   # Save the project after all modifications
+#   installer.pods_project.save
+
+#   # Make Firebase/Google/gRPC importable from Swift
+#   %w[
+#     GoogleUtilities
+#     PromisesObjC
+#     FirebaseCore
+#     FirebaseCoreInternal
+#     FirebaseCoreExtension
+#     gRPC-Core
+#     gRPC-C++
+#   ].each do |name|
+#     if (t = installer.pods_project.targets.find { |x| x.name == name })
+#       t.build_configurations.each do |c|
+#         c.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+#         c.build_settings['DEFINES_MODULE'] = 'YES'
+#       end
+#     end
+#   end
+
+#   # Ensure C++20 for Fabric/Codegen C++ sources
+#   %w[RNScreens RNGestureHandler react-native-safe-area-context ReactCodegen].each do |name|
+#     if (t = installer.pods_project.targets.find { |x| x.name == name })
+#       t.build_configurations.each do |c|
+#         c.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'
+#         c.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+#         c.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+#         c.build_settings['DEFINES_MODULE'] = 'YES'
+#       end
+#     end
+#   end
+  
+#   # Ensure ReactCodegen builds before RNScreens and RNGestureHandler
+#   %w[RNScreens RNGestureHandler].each do |name|
+#     if (target = installer.pods_project.targets.find { |x| x.name == name })
+#       if (reactcodegen = installer.pods_project.targets.find { |x| x.name == 'ReactCodegen' })
+#         target.add_dependency(reactcodegen)
+#       end
+#     end
+#   end
+  
+#   # Ensure ReactCodegen includes all codegen source files
+#   if (reactcodegen = installer.pods_project.targets.find { |x| x.name == 'ReactCodegen' })
+#     codegen_base_path = File.join(Dir.pwd, 'ios', 'build', 'generated', 'ios', 'react', 'renderer', 'components')
+    
+#     # Find all codegen .cpp files
+#     codegen_components = ['rnscreens', 'rngesturehandler_codegen', 'safeareacontext']
+#     codegen_files = []
+    
+#     codegen_components.each do |component|
+#       component_path = File.join(codegen_base_path, component)
+#       if Dir.exist?(component_path)
+#         ['Props.cpp', 'EventEmitters.cpp', 'ComponentDescriptors.cpp', 'ShadowNodes.cpp', 'States.cpp'].each do |file|
+#           file_path = File.join(component_path, file)
+#           if File.exist?(file_path)
+#             codegen_files << file_path
+#           end
+#         end
+#       end
+#     end
+    
+#     # Add files to ReactCodegen target if they exist
+#     if codegen_files.any?
+#       sources_phase = reactcodegen.build_phases.find { |phase| phase.is_a?(Xcodeproj::Project::Object::PBXSourcesBuildPhase) }
+#       if sources_phase
+#         codegen_files.each do |file_path|
+#           # Check if file is already in the project
+#           file_ref = installer.pods_project.files.find { |f| f.path == file_path || f.real_path.to_s == file_path }
+          
+#           if file_ref.nil?
+#             # Create file reference relative to project
+#             relative_path = Pathname.new(file_path).relative_path_from(Pathname.new(installer.pods_project.project_dir))
+#             file_ref = installer.pods_project.new_file(relative_path.to_s)
+#           end
+          
+#           # Add to sources phase if not already there
+#           unless sources_phase.files.any? { |f| f.file_ref == file_ref }
+#             sources_phase.add_file_reference(file_ref)
+#           end
+#         end
+#       end
+#     end
 #   end
 # end
 
 
 
-platform :ios, '16.0'
 
-require_relative '../node_modules/react-native/scripts/react_native_pods.rb'
-
-prepare_react_native_project!
-
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+platform :ios, '15.1'
 
 target 'Notes' do
-  use_modular_headers!
+  use_frameworks! :linkage => :static
+
+  # React Native CocoaPods helpers
+  require_relative '../node_modules/react-native/scripts/react_native_pods'
+
+  # Load use_native_modules! robustly
+  begin
+    require_relative '../node_modules/@react-native/cli-platform-ios/native_modules'
+  rescue LoadError
+    begin
+      require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+    rescue LoadError
+      require_relative '../node_modules/react-native/scripts/native_modules'
+    end
+  end
+
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
-    :hermes_enabled => true
+    :hermes_enabled => true,
+    :fabric_enabled => false   # ⬅️ OLD ARCH, NO FABRIC
   )
 
-  # ✅ Firebase pods for iOS
-  pod 'Firebase/Core'
-  pod 'Firebase/Auth'
-  pod 'Firebase/Firestore'
+  # ---- Firebase pods you actually use ----
+  pod 'FirebaseCore'
+  pod 'FirebaseCoreInternal'
+  pod 'FirebaseCoreExtension'
+  pod 'FirebaseAuth'
+  pod 'FirebaseFirestore'
 
-  post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false
-    )
-    
-    # Set deployment target for all pods
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+  # ---- Must expose module maps for Swift ----
+  pod 'GoogleUtilities',         :modular_headers => true
+  pod 'PromisesObjC',            :modular_headers => true
+  pod 'gRPC-Core',               :modular_headers => true
+  pod 'gRPC-C++',                :modular_headers => true
+  pod 'FirebaseAuthInterop',     :modular_headers => true
+  pod 'FirebaseAppCheckInterop', :modular_headers => true
+  pod 'RecaptchaInterop',        :modular_headers => true
+end
+
+post_install do |installer|
+  # Let RN configure pods
+  react_native_post_install(installer)
+
+  # 1) Normalize build settings (iOS 15.1 + libc++)
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
+      config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+
+      # 2) FORCE OLD ARCH: disable Fabric / New Arch everywhere
+      config.build_settings['USE_FABRIC'] = 'NO'
+      config.build_settings['RCT_NEW_ARCH_ENABLED'] = '0'
+
+      if defs = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS']
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] =
+          defs.reject { |d| d.to_s.include?('RCT_NEW_ARCH_ENABLED') || d.to_s.include?('USE_FABRIC') }
+      end
+    end
+  end
+
+  # 3) Make Firebase/Google/gRPC importable from Swift
+  %w[
+    GoogleUtilities
+    PromisesObjC
+    FirebaseCore
+    FirebaseCoreInternal
+    FirebaseCoreExtension
+    gRPC-Core
+    gRPC-C++
+  ].each do |name|
+    if (t = installer.pods_project.targets.find { |x| x.name == name })
+      t.build_configurations.each do |c|
+        c.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        c.build_settings['DEFINES_MODULE'] = 'YES'
       end
     end
   end
 end
-

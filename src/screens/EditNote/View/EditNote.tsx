@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native"
 import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
@@ -15,6 +15,7 @@ const EditNote = () => {
     const navigation = useNavigation()
 
     return (
+        <SafeAreaView>
         <View style={styles.container}>
             <View style={{ alignSelf: "flex-start", marginBottom: vs(30), margin: vs(4) }}>
                 <TouchableOpacity onPress={() => {
@@ -29,6 +30,7 @@ const EditNote = () => {
             <AppTextInput value={editNote} onChangeText={setEditNote} keyboardType="default" />
             <AppButton title={loading ? <ActivityIndicator color="#ffffff" /> : "Save"} style={{ width: "50%", marginTop: vs(10) }} onPress={() => onSavePress()} disabled={loading ? true : false} />
         </View>
+        </SafeAreaView>
     )
 }
 

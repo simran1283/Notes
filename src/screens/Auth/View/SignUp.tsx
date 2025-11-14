@@ -4,15 +4,21 @@ import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
 import useSignUp from "../ViewModel/SignUpViewModel"
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const SignUp = () => {
 
     const { userName, email, password, setUserName, setEmail, setPassword, navigation, onSignUpPress, isSigningUp } = useSignUp()
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity onPress={() => {
+                    navigation.reset({
+                        index: 0,
+                        routes: [{ name: "SignIn" }],
+                    });
+                }}>
                     <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
                 </TouchableOpacity>
             </View>
@@ -21,9 +27,9 @@ const SignUp = () => {
                     <Text style={styles.title}>SIGN UP</Text>
                     <Text style={styles.subTitle}>Create an account to start doing more</Text>
                 </View>
-                <AppTextInput title="UserName" value={userName} keyboardType="default" onChangeText={setUserName} multiline={false}/>
-                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} multiline={false}/>
-                <AppTextInput title="Password" value={password} keyboardType="default" secureTextEntry onChangeText={setPassword} multiline={false}/>
+                <AppTextInput title="UserName" value={userName} keyboardType="default" onChangeText={setUserName} multiline={false} />
+                <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} multiline={false} />
+                <AppTextInput title="Password" value={password} keyboardType="default" secureTextEntry onChangeText={setPassword} multiline={false} />
             </View>
             <View style={{ marginTop: vs(30) }}>
                 <AppButton title={isSigningUp ? <ActivityIndicator color="#ffffff" /> : "Sign Up"}
@@ -32,12 +38,12 @@ const SignUp = () => {
                     disabled={isSigningUp ? true : false} />
                 <AppButton title="Go To Login" onPress={() => {
                     navigation.reset({
-                index: 0,
-                routes: [{ name: "SignIn" }],
-            });
+                        index: 0,
+                        routes: [{ name: "SignIn" }],
+                    });
                 }} style={{ width: "80%" }} />
             </View>
-        </View>
+        </SafeAreaView>
     )
 }
 

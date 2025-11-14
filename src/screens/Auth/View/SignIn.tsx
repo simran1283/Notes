@@ -3,6 +3,7 @@ import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
 import useSignIn from "../ViewModel/SignInViewModel"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 
 const SignIn = () => {
@@ -10,7 +11,7 @@ const SignIn = () => {
     const { email, password, setEmail, setPassword, navigation, onLoginPress, isLoggingIn } = useSignIn()
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={{ marginTop: vs(20) }}>
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>LOG IN</Text>
@@ -31,7 +32,7 @@ const SignIn = () => {
                     });
                 }} style={{ width: "80%" }} />
             </View>
-        </View>
+        </SafeAreaView>
     )
 }
 

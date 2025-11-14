@@ -17,6 +17,7 @@ import { showMessage } from "react-native-flash-message"
 import { useNavigation } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const Home = () => {
 
@@ -67,45 +68,47 @@ const Home = () => {
     }
 
     return (
-        <View style={styles.safeContainer}>
-            <View style={styles.container}>
-                {/* Header */}
-                <View style={styles.header}>
-                    <Text style={styles.syncText}>
-                        Last Synced: {lastSync || "Not yet synced"}
-                    </Text>
+
+        <SafeAreaView style={styles.safeContainer}>
+                <View style={styles.container}>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <Text style={styles.syncText}>
+                            Last Synced: {lastSync || "Not yet synced"}
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.logoutBtn}
+                            onPress={async () => {
+                                await AsyncStorage.removeItem("user")
+                                navigation.reset({
+                                    index: 0,
+                                    routes: [{ name: "SignIn" }],
+                                });
+                            }}
+                        >
+                            <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Notes List */}
+                    <FlatList
+                        data={allNotes}
+                        renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
+                        keyExtractor={(item) => item.id}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.listContainer}
+                    />
+
+                    {/* Add Note Button */}
                     <TouchableOpacity
-                        style={styles.logoutBtn}
-                        onPress={async () => {
-                            await AsyncStorage.removeItem("user")
-                            navigation.reset({
-                                index: 0,
-                                routes: [{ name: "SignIn" }],
-                            });
-                        }}
+                        style={styles.addButton}
+                        onPress={() => navigation.navigate("NewNote")}
                     >
-                        <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
+                        <Ionicons name="add" color="#fff" size={ms(26)} />
                     </TouchableOpacity>
                 </View>
+        </SafeAreaView >
 
-                {/* Notes List */}
-                <FlatList
-                    data={allNotes}
-                    renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
-                    keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.listContainer}
-                />
-
-                {/* Add Note Button */}
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate("NewNote")}
-                >
-                    <Ionicons name="add" color="#fff" size={ms(26)} />
-                </TouchableOpacity>
-            </View>
-         </View>
     )
 }
 
@@ -168,13 +171,13 @@ export default Home
 const styles = StyleSheet.create({
     safeContainer: {
         flex: 1,
-        paddingTop: vs(5),
+        paddingTop : vs(5)
     },
 
     container: {
         flex: 1,
         paddingHorizontal: s(15),
-        paddingTop: vs(5),
+        paddingTop : vs(5)
     },
 
     loaderContainer: {
@@ -188,25 +191,25 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: vs(10),
-        paddingVertical: vs(4),
+        paddingVertical : vs(4),
         paddingHorizontal: s(4),
     },
 
     syncText: {
         fontSize: ms(13),
         color: "#333",
-        flexShrink: 1,         
-        maxWidth: "80%",       
+        flexShrink: 1,
+        maxWidth: "80%",
     },
 
     logoutBtn: {
-        padding: s(8),         
+        padding: s(8),
     },
 
     listContainer: {
-        paddingBottom: vs(90), 
+        paddingBottom: vs(90),
         paddingTop: vs(5),
-        padding : vs(5)
+        padding: vs(5)
     },
 
     addButton: {

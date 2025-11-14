@@ -1,5 +1,5 @@
 import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, View } from "react-native"
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
 import useNewNote from "../ViewModel/NewNoteViewModel"
@@ -10,8 +10,9 @@ const NewNote = () => {
     const { note, setNote, AddNotes, navigation, loading } = useNewNote()
 
     return (
+        <SafeAreaView>
         <View style={styles.container}>
-            <View style={{ alignSelf: "flex-start", marginBottom: vs(30), margin: vs(4) }}>
+            <View style={{ alignSelf: "flex-start", marginBottom: vs(20), marginHorizontal: vs(4) }}>
                 <TouchableOpacity onPress={() => {
                     navigation.reset({
                         index: 0,
@@ -27,6 +28,7 @@ const NewNote = () => {
                 onPress={AddNotes}
                 disabled={loading ? true : false} />
         </View>
+        </SafeAreaView>
     )
 }
 
@@ -34,7 +36,6 @@ export default NewNote
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
         margin: vs(10)
     }
 })
