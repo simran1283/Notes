@@ -1,6 +1,7 @@
 export interface NotesCardProps {
     item : Note,
     setReload : boolean
+    highlightId : boolean
 } 
 
 
@@ -10,5 +11,6 @@ export type Note  = {
     lastUpdated : number,
     userId : string,
     localId? : string,
-    sync? : number
+    sync? : number,
+    reminder : string
 }

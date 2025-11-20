@@ -9,36 +9,33 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useEffect, useState } from "react"
 import { ActivityIndicator, View } from "react-native"
 import { showMessage } from "react-native-flash-message"
+import Calendar from "../components/Calendar/View/Calendar"
+import { navigationRef } from "./navigationRef"
+import { RootStackParamList } from "../types/NavigationType"
 
-interface MainAppStackNavigationParamsList {
-    Home: undefined,
-    SignIn: undefined,
-    SignUp: undefined,
-    NewNote: undefined
-}
 
 
 const MainAppStackNavigation = () => {
 
-    const Stack = createStackNavigator()
+    const Stack = createStackNavigator<RootStackParamList>()
 
     const [isLoggedIn, setIsLoggedIn] = useState<String | null | boolean>(null)
 
     const getUser = async () => {
         try {
             const user = await AsyncStorage.getItem('user')
-        if (user) {
-            setIsLoggedIn(!!user)
-        }else{
-            setIsLoggedIn(false)
-        }
-        }catch(error){
+            if (user) {
+                setIsLoggedIn(!!user)
+            } else {
+                setIsLoggedIn(false)
+            }
+        } catch (error) {
             showMessage({
-                type : "danger",
-                message : "Error"
+                type: "danger",
+                message: "Error"
             })
         }
-        
+
     }
 
     useEffect(() => {
@@ -55,7 +52,15 @@ const MainAppStackNavigation = () => {
     }
 
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}
+            onReady={() => {
+                if (globalThis.PENDING_NAVIGATION) {
+                    navigationRef.current?.navigate("Home", {
+                        id: globalThis.PENDING_NAVIGATION,
+                    });
+                    globalThis.PENDING_NAVIGATION = null;
+                }
+            }}>
             <Stack.Navigator screenOptions={{
                 headerShown: false
             }} initialRouteName={isLoggedIn ? "Home" : "SignIn"}>
@@ -65,6 +70,7 @@ const MainAppStackNavigation = () => {
                 <Stack.Screen name="NewNote" component={NewNote} />
                 <Stack.Screen name="EditNote" component={EditNote} />
             </Stack.Navigator>
+            <Calendar />
         </NavigationContainer>
     )
 }

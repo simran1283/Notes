@@ -16,6 +16,8 @@ export type LocalNote = {
     text: string
     lastUpdated: number
     sync: number
+    reminder: string
+    notificationId: string
 }
 
 //initializing local DB
@@ -27,6 +29,8 @@ export const initDB = async () => {
 
         db = await SQLite.openDatabase({ name: "notes.db", location: 'Documents', })
 
+        // await db?.executeSql(`DROP TABLE notes`)
+
         await db.executeSql(`
         CREATE TABLE IF NOT EXISTS notes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,9 +38,13 @@ export const initDB = async () => {
         fireStoreId TEXT UNIQUE,
         text TEXT NOT NULL,
         lastUpdated INTEGER,
-        sync INTEGER DEFAULT 0
+        sync INTEGER DEFAULT 0,
+        reminder STRING,
+        notificationId STRING
         );
     `);
+
+
 
         await db.executeSql(`
   CREATE TABLE IF NOT EXISTS deleted_notes (
@@ -101,8 +109,10 @@ export const SyncOfflineNotes = async () => {
                             note: note.text,
                             lastUpdated: note.lastUpdated,
                             userId: note.userId,
+                            reminder: note.reminder || null,
+                            notificationId: note.notificationId || null
                         },
-                        { merge: true } // <-- safer than update()
+                        { merge: true }
                     )
                 } else {
 
@@ -112,6 +122,8 @@ export const SyncOfflineNotes = async () => {
                             note: note.text,
                             lastUpdated: note.lastUpdated,
                             userId: note.userId,
+                            reminder: note.reminder || null,
+                            notificationId: note.notificationId || null
                         })
 
                     // ✅ Make sure to update the correct local row immediately
@@ -125,7 +137,7 @@ export const SyncOfflineNotes = async () => {
                 }
 
                 // Mark note as synced safely (even for updates)
-                await db.executeSql(
+                await db?.executeSql(
                     `UPDATE notes SET sync = 1 WHERE id = ?`,
                     [note.id]
                 )
@@ -183,3 +195,175 @@ export const SyncDeletions = async () => {
         console.log("SyncDeletions Error:", error)
     }
 }
+
+
+export const updatesetReminder = async (localId, firestoreId, date) => {
+    const user = auth().currentUser
+    try {
+        console.log(localId, firestoreId, date)
+        if (localId) {
+            await db?.executeSql(
+                `UPDATE notes 
+        SET reminder = ?, lastUpdated = ? 
+        WHERE id = ?`,
+                [date, Date.now(), localId])
+        }
+
+        if (firestoreId) {
+            await db?.executeSql(
+                `UPDATE notes 
+                SET reminder = ?, lastUpdated = ?
+                WHERE firestoreId = ?`,
+                [date, Date.now(), firestoreId]
+            )
+        }
+
+        if (user && firestoreId) {
+            await firestore()
+                .collection("users")
+                .doc(user.uid)
+                .collection("notes")
+                .doc(firestoreId)
+                .set({ reminder: date, lastUpdated: Date.now() }, { merge: true });
+        }
+
+        showMessage({
+            type: "success",
+            message: "Reminder has been set"
+        })
+    }
+    catch (err) {
+        console.log("Error updating Reminder", err)
+    }
+
+}
+
+
+
+
+
+export const removeReminder = async (localId, firestoreId) => {
+    const user = auth().currentUser
+    try {
+        console.log(localId, firestoreId)
+        if (localId) {
+            await db?.executeSql(
+                `UPDATE notes 
+        SET reminder = ?, lastUpdated = ? 
+        WHERE id = ?`,
+                [null, Date.now(), localId])
+        }
+
+        if (firestoreId) {
+            await db?.executeSql(
+                `UPDATE notes 
+                SET reminder = ?, lastUpdated = ?
+                WHERE fireStoreId = ?`,
+                [null, Date.now(), firestoreId]
+            )
+        }
+
+        if (user && firestoreId) {
+            await firestore()
+                .collection("users")
+                .doc(user.uid)
+                .collection("notes")
+                .doc(firestoreId)
+                .set({ reminder: null, lastUpdated: Date.now() }, { merge: true });
+        }
+
+        showMessage({
+            type: "success",
+            message: "Reminder has been removed"
+        })
+    }
+    catch (err) {
+        console.log("Error updating Reminder", err)
+    }
+
+}
+
+
+export const saveNotification = async (notificationId, localId, firestoreId) => {
+    const user = auth().currentUser;
+    try {
+        await db?.executeSql(
+            `UPDATE notes 
+             SET notificationId = ?, lastUpdated = ?
+             WHERE id = ? OR fireStoreId = ?`,
+            [notificationId, Date.now(), localId, firestoreId]
+        );
+
+        if (user && firestoreId) {
+            await firestore()
+                .collection("users")
+                .doc(user.uid)
+                .collection("notes")
+                .doc(firestoreId)
+                .set(
+                    {
+                        notificationId: notificationId,
+                        lastUpdated: Date.now()
+                    },
+                    { merge: true }
+                );
+        }
+    } catch (e) {
+        showMessage({
+            type: "danger",
+            message: "Error saving Notification"
+        });
+    }
+};
+
+
+
+export const getNotificationId = async (localId, firestoreId) => {
+    try {
+
+        const result = await db?.executeSql(
+            `SELECT notificationId 
+       FROM notes 
+       WHERE (id = ? OR fireStoreId = ?) `,
+            [localId, firestoreId]
+        );
+
+        console.log("SQL Result =>", result);
+
+        const rows = result[0].rows;
+
+        if (rows.length === 0) return null;
+
+        return rows.item(0).notificationId;
+
+    } catch (error) {
+        console.log("Error:", error);
+        return null;
+    }
+};
+
+
+export const deleteNotificationId = async (localId, firestoreId) => {
+    const user = auth().currentUser;
+
+    if (localId) {
+
+        await db?.executeSql(`
+    UPDATE notes
+    SET notificationId = NULL
+    WHERE id = ? AND userId = ?
+  `,
+            [localId, user?.uid]);
+    }
+
+    if (firestoreId) {
+        await db?.executeSql(`
+    UPDATE notes
+    SET notificationId = NULL
+    WHERE fireStoreId = ? AND userId = ?
+  `,
+            [firestoreId, user?.uid]);
+    }
+
+
+};

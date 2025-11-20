@@ -54,9 +54,9 @@ const useNewNote = () => {
 
                 if (existing[0].rows.length === 0) {
                     await db?.executeSql(
-                        `INSERT INTO notes (userId,fireStoreId,text,lastUpdated,sync)
-     VALUES (?, ?, ?, ?, ?)`,
-                        [userId, docRef.id, note, timestamp, 1]
+                        `INSERT INTO notes (userId,fireStoreId,text,lastUpdated,sync, reminder, notificationId)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                        [userId, docRef.id, note, timestamp, 1, null, null]
                     )
                 }
 
@@ -71,9 +71,9 @@ const useNewNote = () => {
 
                 if (existingOffline[0].rows.length === 0) {
                     await db?.executeSql(
-                        `INSERT INTO notes (userId, fireStoreId, text, lastUpdated, sync)
-     VALUES (?, ?, ?, ?, ?)`,
-                        [userId, null, note, timestamp, 0]
+                        `INSERT INTO notes (userId, fireStoreId, text, lastUpdated, sync, reminder, notificationId)
+     VALUES (?, ?, ?, ?, ?, ?. ?)`,
+                        [userId, null, note, timestamp, 0, null, null]
                     )
                 } else {
                     console.log("Duplicate offline note skipped:", note)
