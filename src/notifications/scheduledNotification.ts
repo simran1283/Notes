@@ -9,11 +9,12 @@ export const scheduledNotification = async (date : Date, note : Note | null) => 
     const channelId = await createChannel()
 
     const notificationId = await notifee.createTriggerNotification({
-        id: note?.id.toString(),
+        id: String(note?.id ?? note?.localId),
         title: "Notes",
         body: note?.note,
         data: {
-            id: note?.id ?? ""
+            id: note?.id ?? "",
+            localId : note?.localId ?? ""
         },
         android: {
             channelId,

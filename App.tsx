@@ -16,7 +16,7 @@ import { CancelNotification } from "./src/notifications/cancelNotification"
 
 const App = () => {
 
-  // const { onToggleCheck } = useNotesCard()
+  
 
   const [banner, setBanner] = useState<null | {
     title: string;
@@ -47,7 +47,7 @@ const App = () => {
     const unsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
 
       const notification = detail.notification
-      const localId = notification?.data?.id
+      const localId = String(notification?.data?.id)
 
       if (type === EventType.DELIVERED) {
         
@@ -118,7 +118,7 @@ const App = () => {
 
       if (initial) {
         const data = initial.notification?.data;
-        const localId = data?.localId || data?.id;
+        const localId = String(data?.localId || data?.id);
 
         if (localId) {
           navigateToTask(localId);
@@ -150,7 +150,7 @@ const App = () => {
           title={banner?.title}
           body={banner?.body}
           onPress={async () => {
-            navigateToTask(banner.id,false)
+            navigateToTask(banner.id)
             await removeReminder(banner.id, banner.id)
             await CancelNotification(banner.id, banner.id)
             setBanner(null)

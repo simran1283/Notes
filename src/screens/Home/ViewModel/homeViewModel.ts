@@ -16,8 +16,8 @@ interface Note {
   lastUpdated: number
   sync: number
   localId?: number
-  reminder? : string
-  notificationId? : string
+  reminder?: string
+  notificationId?: string
 }
 
 const useHome = () => {
@@ -25,7 +25,7 @@ const useHome = () => {
   const [allNotes, setAllNotes] = useState<Note[]>([])
   const [isSyncingIn, setSyncingIn] = useState(false)
   const isSyncing = useRef(false)
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList,"SignUp">>()
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, "SignUp">>()
 
   // 🔹 FIXED fetchNotes function
   const fetchNotes = async (setAllNotes: React.Dispatch<React.SetStateAction<Note[]>>) => {
@@ -44,7 +44,7 @@ const useHome = () => {
           .collection('users')
           .doc(userId)
           .collection('notes')
-          .orderBy("lastUpdated","desc")
+          .orderBy("lastUpdated", "desc")
           .get();
 
         const fetchedNotes = snapshot.docs.map(doc => ({
@@ -64,7 +64,7 @@ const useHome = () => {
           SET fireStoreId = ?, text = ?, lastUpdated = ?, reminder = ?, notificationId = ?, sync = 1
           WHERE userId = ? AND text = ? AND fireStoreId IS NULL
           `,
-              [note.fireStoreId, note.text, note.lastUpdated,note.reminder, note.notificationId, userId, note.text],
+              [note.fireStoreId, note.text, note.lastUpdated, note.reminder, note.notificationId, userId, note.text],
               (_, result) => {
                 // If no local note was updated, insert as new
                 if (result.rowsAffected === 0) {
@@ -104,12 +104,12 @@ const useHome = () => {
         // ✅ Update in-memory notes
         setAllNotes(
           fetchedNotes.map(n => ({
-            id : n.fireStoreId,
+            id: n.fireStoreId,
             note: n.text,
             lastUpdated: n.lastUpdated,
             sync: 1,
-            reminder : n.reminder,
-            notificationId : n.notificationId
+            reminder: n.reminder,
+            notificationId: n.notificationId
           }))
         );
 
@@ -131,13 +131,13 @@ const useHome = () => {
             }
             setAllNotes(
               notes.map(n => ({
-                id : n.fireStoreId,
+                id: n.fireStoreId,
                 note: n.text,
                 localId: n.id,
                 lastUpdated: n.lastUpdated,
                 sync: n.sync,
-                reminder : n.reminder,
-                notificationId : n.notificationId
+                reminder: n.reminder,
+                notificationId: n.notificationId
               }))
             )
           }

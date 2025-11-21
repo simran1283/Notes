@@ -22,7 +22,11 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
 
     return (
         <View style={styles.outerContainer}>
-            <View style={[styles.container,   item.id === highlightId && { borderWidth: 2, borderColor: "#df5d88ff" }]}>
+            <View style={[styles.container, item.id != null &&
+                highlightId != null &&
+                item.id === highlightId
+                ? { borderWidth: 2, borderColor: "#df5d88ff" }
+                : {}]}>
 
                 {/* Title + Sync Status */}
                 <View style={styles.statusContainer}>
@@ -64,7 +68,7 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
 
                             // Otherwise open datepicker modal to add reminder
                             setSelectedNote(item);
-                            setCancelAction(() => () =>{});
+                            setCancelAction(() => () => { });
                             setOpen(true);
                         }}
                         hitSlop={5}

@@ -2,6 +2,7 @@ import SQLite, { SQLiteDatabase } from "react-native-sqlite-storage"
 import firestore from "@react-native-firebase/firestore"
 import auth from "@react-native-firebase/auth"
 import { showMessage } from "react-native-flash-message"
+import NetInfo from "@react-native-community/netinfo"
 
 SQLite.DEBUG(true)
 
@@ -88,7 +89,7 @@ export const SyncOfflineNotes = async () => {
             [userId]
         )
 
-        if(!results) return;
+        if (!results) return;
         const rows = results[0].rows
 
         if (rows.length === 0) {
@@ -98,6 +99,7 @@ export const SyncOfflineNotes = async () => {
 
         for (let i = 0; i < rows.length; i++) {
             const note = rows.item(i)
+            
             const noteRef = firestore()
                 .collection("users")
                 .doc(userId)
@@ -172,7 +174,7 @@ export const SyncDeletions = async () => {
         const userId = auth().currentUser?.uid
 
         const results = await db?.executeSql(`SELECT * FROM deleted_notes`)
-        if(!results) return;
+        if (!results) return;
         const rows = results[0].rows
 
         for (let i = 0; i < rows.length; i++) {
@@ -200,52 +202,95 @@ export const SyncDeletions = async () => {
 }
 
 
-export const updatesetReminder = async (localId : number | string | undefined, firestoreId : string | number | undefined, date : number | string) => {
-    const user = auth().currentUser
+// export const updatesetReminder = async (localId : number | string | undefined, firestoreId : string | number | undefined, date : number | string) => {
+//     const user = auth().currentUser
+//     try {
+//         console.log(localId, firestoreId, date)
+//         if (localId) {
+//             await db?.executeSql(
+//                 `UPDATE notes 
+//         SET reminder = ?, lastUpdated = ? 
+//         WHERE id = ?`,
+//                 [date, Date.now(), localId])
+//         }
+
+//         if (firestoreId) {
+//             await db?.executeSql(
+//                 `UPDATE notes 
+//                 SET reminder = ?, lastUpdated = ?
+//                 WHERE firestoreId = ?`,
+//                 [date, Date.now(), firestoreId]
+//             )
+//         }
+
+//         if (user && firestoreId) {
+//             await firestore()
+//                 .collection("users")
+//                 .doc(user.uid)
+//                 .collection("notes")
+//                 .doc(firestoreId.toString())
+//                 .set({ reminder: date, lastUpdated: Date.now() }, { merge: true });
+//         }
+
+//         showMessage({
+//             type: "success",
+//             message: "Reminder has been set"
+//         })
+//     }
+//     catch (err) {
+//         console.log("Error updating Reminder", err)
+//     }
+
+// }
+
+
+
+export const updatesetReminder = async (localId : number | string | undefined, firestoreId : number | string | undefined, date : number | string) => {
+
+    const state = await NetInfo.fetch()
+
+    const user = auth().currentUser;
     try {
-        console.log(localId, firestoreId, date)
         if (localId) {
             await db?.executeSql(
-                `UPDATE notes 
-        SET reminder = ?, lastUpdated = ? 
-        WHERE id = ?`,
-                [date, Date.now(), localId])
+                `UPDATE notes SET reminder = ?, lastUpdated = ? WHERE id = ?`,
+                [date, Date.now(), localId]
+            );
         }
 
         if (firestoreId) {
             await db?.executeSql(
-                `UPDATE notes 
-                SET reminder = ?, lastUpdated = ?
-                WHERE firestoreId = ?`,
+                `UPDATE notes SET reminder = ?, lastUpdated = ? WHERE firestoreId = ?`,
                 [date, Date.now(), firestoreId]
-            )
-        }
-
-        if (user && firestoreId) {
-            await firestore()
-                .collection("users")
-                .doc(user.uid)
-                .collection("notes")
-                .doc(firestoreId.toString())
-                .set({ reminder: date, lastUpdated: Date.now() }, { merge: true });
+            );
         }
 
         showMessage({
             type: "success",
             message: "Reminder has been set"
-        })
+        });
+
+        // Firestore sync → non-blocking
+        if (state.isConnected && user && firestoreId != null) {
+            firestore()
+                .collection("users")
+                .doc(user.uid)
+                .collection("notes")
+                .doc(String(firestoreId))
+                .set({ reminder: date, lastUpdated: Date.now() }, { merge: true })
+                .catch(err => console.log("Firestore sync failed:", err));
+        }
+    } catch (err) {
+        console.log("Error updating Reminder", err);
     }
-    catch (err) {
-        console.log("Error updating Reminder", err)
-    }
-
-}
+};
 
 
 
 
 
-export const removeReminder = async (localId : number | string | undefined, firestoreId : string | number | undefined) => {
+
+export const removeReminder = async (localId: number | string | undefined, firestoreId: string | number | undefined) => {
     const user = auth().currentUser
     try {
         console.log(localId, firestoreId)
@@ -287,7 +332,8 @@ export const removeReminder = async (localId : number | string | undefined, fire
 }
 
 
-export const saveNotification = async (notificationId : string, localId : number | string | undefined, firestoreId : string | undefined) => {
+
+export const saveNotification = async ( notificationId: string, localId: number | string | undefined,firestoreId: string | undefined) => {
     const user = auth().currentUser;
     try {
         await db?.executeSql(
@@ -302,7 +348,7 @@ export const saveNotification = async (notificationId : string, localId : number
                 .collection("users")
                 .doc(user.uid)
                 .collection("notes")
-                .doc(firestoreId)
+                .doc(firestoreId)            // ⬅️ if firestoreId is wrong here
                 .set(
                     {
                         notificationId: notificationId,
@@ -321,7 +367,7 @@ export const saveNotification = async (notificationId : string, localId : number
 
 
 
-export const getNotificationId = async (localId : number | string | undefined, firestoreId : string | number | undefined) => {
+export const getNotificationId = async (localId: number | string | undefined, firestoreId: string | number | undefined) => {
     try {
 
         const result = await db?.executeSql(
@@ -333,7 +379,7 @@ export const getNotificationId = async (localId : number | string | undefined, f
 
         console.log("SQL Result =>", result);
 
-        if(!result) return;
+        if (!result) return;
 
         const rows = result[0].rows;
 
@@ -348,7 +394,7 @@ export const getNotificationId = async (localId : number | string | undefined, f
 };
 
 
-export const deleteNotificationId = async (localId : number | string | undefined, firestoreId : string | number | undefined) => {
+export const deleteNotificationId = async (localId: number | string | undefined, firestoreId: string | number | undefined) => {
     const user = auth().currentUser;
 
     if (localId) {
