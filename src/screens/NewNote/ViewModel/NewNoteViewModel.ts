@@ -5,13 +5,15 @@ import { initDB } from "../../../database/databse";
 import NetInfo from "@react-native-community/netinfo"
 import auth from "@react-native-firebase/auth"
 import firestore from "@react-native-firebase/firestore"
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../types/NavigationType";
 
 const useNewNote = () => {
 
     const [note, setNote] = useState("")
     const [loading, setLoading] = useState(false)
 
-    const navigation = useNavigation()
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList,"Home">>()
 
     // local DB and Firestore
     const AddNotes = async () => {
@@ -51,6 +53,7 @@ const useNewNote = () => {
                     `SELECT * FROM notes WHERE fireStoreId = ?`,
                     [docRef.id]
                 )
+                if(!existing) return;
 
                 if (existing[0].rows.length === 0) {
                     await db?.executeSql(
@@ -69,10 +72,12 @@ const useNewNote = () => {
                     [userId, note]
                 )
 
+                if(!existingOffline) return;
+
                 if (existingOffline[0].rows.length === 0) {
                     await db?.executeSql(
                         `INSERT INTO notes (userId, fireStoreId, text, lastUpdated, sync, reminder, notificationId)
-     VALUES (?, ?, ?, ?, ?, ?. ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
                         [userId, null, note, timestamp, 0, null, null]
                     )
                 } else {

@@ -4,6 +4,8 @@ import { Alert } from "react-native";
 import { showMessage } from "react-native-flash-message";
 import auth from "@react-native-firebase/auth"
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../types/NavigationType";
 
 const useSignIn = () => {
 
@@ -11,7 +13,7 @@ const useSignIn = () => {
     const [password, setPassword] = useState("");
     const [isLoggingIn, setIsLoggingIn] = useState(false)
 
-    const navigation = useNavigation()
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList,"SignIn">>()
 
     const onLoginPress = async () => {
 

@@ -34,7 +34,7 @@ const Calendar = () => {
                     return;
                 } else {
                     setDate(value)
-                    await updatesetReminder(selectedNote?.localId, selectedNote?.id, value.toString())
+                    await updatesetReminder(selectedNote?.id, selectedNote?.id, value.toString())
                     onToggleCheck()
                     await scheduledNotification(value, selectedNote)
                     setReload?.(prev => !prev);

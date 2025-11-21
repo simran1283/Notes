@@ -6,10 +6,12 @@ import { showMessage } from "react-native-flash-message"
 import firestore from "@react-native-firebase/firestore"
 import auth from "@react-native-firebase/auth"
 import { initDB } from "../../../database/databse"
+import { StackNavigationProp } from "@react-navigation/stack"
+import { RootStackParamList } from "../../../types/NavigationType"
 
 const useEditNote = (item: Note) => {
 
-    const navigation = useNavigation()
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList,"EditNote">>()
 
     const [editNote, setEditNote] = useState(item.note)
     const [loading, setLoading] = useState(false)
@@ -29,6 +31,9 @@ const useEditNote = (item: Note) => {
                     [item.localId]
                 )
                 const rows = res?.[0]?.rows
+
+                if(!rows) return;
+                
                 if (rows?.length > 0 && rows?.item(0).fireStoreId) {
                     firestoreId = rows?.item(0).fireStoreId
                 }
@@ -108,7 +113,8 @@ const useEditNote = (item: Note) => {
         editNote,
         setEditNote,
         onSavePress,
-        loading
+        loading,
+        navigation
     }
 }
 

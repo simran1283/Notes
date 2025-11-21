@@ -3,6 +3,8 @@ import { useState } from "react";
 import { showMessage } from "react-native-flash-message";
 import auth from "@react-native-firebase/auth"
 import firestore from "@react-native-firebase/firestore"
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../types/NavigationType";
 
 const useSignUp = () => {
 
@@ -11,7 +13,7 @@ const useSignUp = () => {
     const [password, setPassword] = useState("");
     const [isSigningUp, setIsSigningUp] = useState(false)
 
-    const navigation = useNavigation()
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList,"SignUp">>()
 
     const onSignUpPress = async () => {
 

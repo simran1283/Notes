@@ -1,7 +1,7 @@
 import { deleteNotificationId, getNotificationId } from "../database/databse"
 import notifee from "@notifee/react-native"
 
-export const CancelNotification = async (localId, firestoreId) => {
+export const CancelNotification = async (localId : number | string | undefined, firestoreId : string | number | undefined) => {
 
     const notificationId = await getNotificationId(localId, firestoreId)
 

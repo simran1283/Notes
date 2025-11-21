@@ -19,7 +19,7 @@ const MainAppStackNavigation = () => {
 
     const Stack = createStackNavigator<RootStackParamList>()
 
-    const [isLoggedIn, setIsLoggedIn] = useState<String | null | boolean>(null)
+    const [isLoggedIn, setIsLoggedIn] = useState<null | boolean>(null)
 
     const getUser = async () => {
         try {

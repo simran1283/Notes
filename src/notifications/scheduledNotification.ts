@@ -1,17 +1,19 @@
+import { Note } from "../components/NotesCard/Model/NotesCardProps"
 import { saveNotification } from "../database/databse"
 import { createChannel } from "./channel"
 import notifee, { TriggerType } from "@notifee/react-native"
 
 
-export const scheduledNotification = async (date, note) => {
+export const scheduledNotification = async (date : Date, note : Note | null) => {
+    
     const channelId = await createChannel()
 
     const notificationId = await notifee.createTriggerNotification({
-        id: note.id.toString(),
+        id: note?.id.toString(),
         title: "Notes",
-        body: note.note,
+        body: note?.note,
         data: {
-            id: note.id
+            id: note?.id ?? ""
         },
         android: {
             channelId,
@@ -26,6 +28,6 @@ export const scheduledNotification = async (date, note) => {
         }
     )
 
-    await saveNotification(notificationId, note.localId, note.id)
+    await saveNotification(notificationId, note?.localId, note?.id)
 
 }

@@ -2,17 +2,19 @@ import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from "react-nat
 import AppTextInput from "../../../components/AppTextInput/View/AppTextInput"
 import AppButton from "../../../components/AppButton/View/AppButton"
 import { vs } from "react-native-size-matters"
-import { useNavigation, useRoute } from "@react-navigation/native"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import useEditNote from "../ViewModel/EditNoteViewModel"
 import Ionicons from "react-native-vector-icons/Ionicons"
+import { RootStackParamList } from "../../../types/NavigationType"
 
 const EditNote = () => {
 
-    const route = useRoute()
+    const route = useRoute<RouteProp<RootStackParamList,"EditNote">>()
     const { item } = route.params
 
-    const { editNote, setEditNote, onSavePress, loading } = useEditNote(item)
-    const navigation = useNavigation()
+    const { editNote, setEditNote, onSavePress, loading, navigation } = useEditNote(item)
+
+    
 
     return (
         <View style={styles.container}>

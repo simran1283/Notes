@@ -24,12 +24,12 @@ const Home = () => {
     const route = useRoute()
     const highlightId = route?.params?.id
 
-    const { allNotes, setAllNotes, fetchNotes, handleSync } = useHome()
+    const { allNotes, setAllNotes, fetchNotes, handleSync, navigation } = useHome()
     const [reload, setReload] = useState(false)
     const [loading, setLoading] = useState(true)
     const [lastSync, setLastSync] = useState("")
     const [highlightedId, setHighlightedId] = useState(null)
-    const navigation = useNavigation()
+    
 
     console.log("Highlighting id : ", highlightId)
 
@@ -113,7 +113,7 @@ const Home = () => {
                 <FlatList
                     data={allNotes}
                     renderItem={({ item }) => <NotesCard item={item} setReload={setReload} highlightId={highlightedId} />}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => String(item.id) }
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.listContainer}
                 />

@@ -11,7 +11,9 @@ const SignUp = () => {
 
     return (
         <View style={styles.container}>
+
             <View>
+
                 <TouchableOpacity onPress={() => {
                     navigation.reset({
                         index: 0,
@@ -20,27 +22,35 @@ const SignUp = () => {
                 }}>
                     <Ionicons name="arrow-back" size={24} color="#df5d88ff" />
                 </TouchableOpacity>
+
             </View>
+
             <View style={{ marginTop: vs(20) }}>
+
                 <View style={styles.textContainer}>
                     <Text style={styles.title}>SIGN UP</Text>
                     <Text style={styles.subTitle}>Create an account to start doing more</Text>
                 </View>
+                
                 <AppTextInput title="UserName" value={userName} keyboardType="default" onChangeText={setUserName} multiline={false} />
                 <AppTextInput title="Email" value={email} keyboardType="default" onChangeText={setEmail} multiline={false} />
                 <AppTextInput title="Password" value={password} keyboardType="default" secureTextEntry onChangeText={setPassword} multiline={false} />
+
             </View>
             <View style={{ marginTop: vs(30) }}>
+
                 <AppButton title={isSigningUp ? <ActivityIndicator color="#ffffff" /> : "Sign Up"}
                     onPress={onSignUpPress}
                     style={{ width: "80%", marginBottom: vs(20) }}
                     disabled={isSigningUp ? true : false} />
+
                 <AppButton title="Go To Login" onPress={() => {
                     navigation.reset({
                         index: 0,
                         routes: [{ name: "SignIn" }],
                     });
                 }} style={{ width: "80%" }} />
+
             </View>
         </View>
     )

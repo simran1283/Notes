@@ -6,11 +6,13 @@ import { Note } from "../Model/NotesCardProps";
 import { initDB } from "../../../database/databse";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../../types/NavigationType";
 
 
-const useNotesCard = (setReload) => {
+const useNotesCard = ( setReload: React.Dispatch<React.SetStateAction<boolean>> | null | undefined) => {
 
-  const navigation = useNavigation()
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList,"EditNote">>()
 
   const [remind, setRemind] = useState(false)
 
@@ -43,6 +45,7 @@ const useNotesCard = (setReload) => {
           [item.localId]
         )
         const rows = res?.[0]?.rows
+        if(!rows) return ;
         if (rows?.length > 0 && rows?.item(0).fireStoreId) {
           firestoreId = rows?.item(0).fireStoreId
         }
@@ -106,7 +109,7 @@ const useNotesCard = (setReload) => {
       })
     }
 
-    setReload((prev) => !prev)
+    setReload?.((prev) => !prev)
   }
 
   return {

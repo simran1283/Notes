@@ -5,6 +5,9 @@ import auth from "@react-native-firebase/auth"
 import { initDB, SyncDeletions, SyncOfflineNotes } from "../../../database/databse"
 import { showMessage } from "react-native-flash-message"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { useNavigation } from "@react-navigation/native"
+import { StackNavigationProp } from "@react-navigation/stack"
+import { RootStackParamList } from "../../../types/NavigationType"
 
 interface Note {
   id?: number
@@ -18,9 +21,11 @@ interface Note {
 }
 
 const useHome = () => {
+
   const [allNotes, setAllNotes] = useState<Note[]>([])
   const [isSyncingIn, setSyncingIn] = useState(false)
   const isSyncing = useRef(false)
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList,"SignUp">>()
 
   // 🔹 FIXED fetchNotes function
   const fetchNotes = async (setAllNotes: React.Dispatch<React.SetStateAction<Note[]>>) => {
@@ -99,7 +104,7 @@ const useHome = () => {
         // ✅ Update in-memory notes
         setAllNotes(
           fetchedNotes.map(n => ({
-            id: n.fireStoreId,
+            id : n.fireStoreId,
             note: n.text,
             lastUpdated: n.lastUpdated,
             sync: 1,
@@ -126,7 +131,7 @@ const useHome = () => {
             }
             setAllNotes(
               notes.map(n => ({
-                id: n.fireStoreId,
+                id : n.fireStoreId,
                 note: n.text,
                 localId: n.id,
                 lastUpdated: n.lastUpdated,
@@ -172,6 +177,7 @@ const useHome = () => {
     fetchNotes,
     handleSync,
     isSyncingIn,
+    navigation
   }
 }
 

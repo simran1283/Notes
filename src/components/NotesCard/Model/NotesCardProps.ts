@@ -1,16 +1,16 @@
 export interface NotesCardProps {
-    item : Note,
-    setReload : boolean
-    highlightId : boolean
-} 
+    item: Note,
+    setReload: React.Dispatch<React.SetStateAction<boolean>>;
+    highlightId: string | number
+}
 
 
-export type Note  = {
-    id : string,
-    note : string,
-    lastUpdated : number,
-    userId : string,
-    localId? : string,
-    sync? : number,
-    reminder : string
+export type Note = {
+    id: string,
+    note: string,
+    lastUpdated: number,
+    userId?: string,
+    localId?: string,
+    sync?: number,
+    reminder: string
 }
