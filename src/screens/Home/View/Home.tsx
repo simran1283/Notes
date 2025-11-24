@@ -1,6 +1,7 @@
 import {
     ActivityIndicator,
     FlatList,
+    SafeAreaView,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -14,25 +15,24 @@ import useHome from "../ViewModel/homeViewModel"
 import Ionicons from "react-native-vector-icons/Ionicons"
 import EmptyNotes from "../../../components/EmptyNotes/View/EmptyNotes"
 import { showMessage } from "react-native-flash-message"
-import { useNavigation, useRoute } from "@react-navigation/native"
+import { RouteProp, useRoute } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { RootStackParamList } from "../../../types/NavigationType"
 
 
 const Home = () => {
 
-    const route = useRoute()
+    const route = useRoute<RouteProp<RootStackParamList,"Home">>()
+
     const highlightId = route?.params?.id
 
-    const { allNotes, setAllNotes, fetchNotes, handleSync } = useHome()
+    const { allNotes, setAllNotes, fetchNotes, handleSync, navigation } = useHome()
     const [reload, setReload] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [lastSync, setLastSync] = useState("")
-    const [highlightedId, setHighlightedId] = useState(null)
-    const navigation = useNavigation()
-
-    console.log("Highlighting id : ", highlightId)
+    const [lastSync, setLastSync] = useState<string | null>("")
+    const [highlightedId, setHighlightedId] = useState<string | number | null>(null)
+    
 
     useEffect(() => {
 
@@ -89,47 +89,51 @@ const Home = () => {
     }
 
     return (
-
         <SafeAreaView style={styles.safeContainer}>
-                <View style={styles.container}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <Text style={styles.syncText}>
-                            Last Synced: {lastSync || "Not yet synced"}
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.logoutBtn}
-                            onPress={async () => {
-                                await AsyncStorage.removeItem("user")
-                                navigation.reset({
-                                    index: 0,
-                                    routes: [{ name: "SignIn" }],
-                                });
-                            }}
-                        >
-                            <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Notes List */}
-                    <FlatList
-                        data={allNotes}
-                        renderItem={({ item }) => <NotesCard item={item} setReload={setReload} />}
-                        keyExtractor={(item) => item.id}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={styles.listContainer}
-                    />
-
-                    {/* Add Note Button */}
+            <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={styles.syncText}>
+                        Last Synced: {lastSync || "Not yet synced"}
+                    </Text>
                     <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => navigation.navigate("NewNote")}
+                        style={styles.logoutBtn}
+                        onPress={async () => {
+                            await AsyncStorage.removeItem("user")
+                            navigation.reset({
+                                index: 0,
+                                routes: [{ name: "SignIn" }],
+                            })
+                        }}
                     >
-                        <Ionicons name="add" color="#fff" size={ms(26)} />
+                        <MaterialIcons name="logout" size={ms(22)} color="#df5d88ff" />
                     </TouchableOpacity>
                 </View>
-        </SafeAreaView >
 
+                {/* Notes List */}
+                <FlatList
+                    data={allNotes}
+                    renderItem={({ item }) => (
+                        <NotesCard
+                            item={item}
+                            setReload={setReload}
+                            highlightId={highlightedId}
+                        />
+                    )}
+                    keyExtractor={(item) => String(item.id)}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.listContainer}
+                />
+
+                {/* Add Note Button */}
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate("NewNote")}
+                >
+                    <Ionicons name="add" color="#fff" size={ms(26)} />
+                </TouchableOpacity>
+            </View>
+        </SafeAreaView>
     )
 }
 

@@ -2,7 +2,7 @@ import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native
 import { vs } from "react-native-size-matters";
 import useNotesCard from "../ViewModel/NotesCardViewModel";
 import { NotesCardProps } from "../Model/NotesCardProps";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import useCalendar from "../../../context/CalendarContext";
@@ -12,7 +12,7 @@ import { CancelNotification } from "../../../notifications/cancelNotification";
 const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
     const { deleteNote, onPressEdit, remind } = useNotesCard(setReload);
     const { setOpen, setCancelAction, setSelectedNote, setSetReload } = useCalendar();
-
+    const [isChecked, setIsChecked] = useState(item.reminder ? true : false);
 
     const formattedDate = new Date(item.lastUpdated).toLocaleString();
 
@@ -22,7 +22,15 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
 
     return (
         <View style={styles.outerContainer}>
+<<<<<<< HEAD
             <View style={[styles.container,   item.id === highlightId && styles.highlighted]}>
+=======
+            <View style={[styles.container, item.id != null &&
+                highlightId != null &&
+                item.id === highlightId
+                ? { borderWidth: 2, borderColor: "#df5d88ff" }
+                : {}]}>
+>>>>>>> a49da98a61abd8c05f1f84130668d2b9bea4afad
 
                 {/* Title + Sync Status */}
                 <View style={styles.statusContainer}>
@@ -55,7 +63,10 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
                     <TouchableOpacity
                         onPress={async () => {
                             // If reminder exists remove it
-                            if (remind || item.reminder) {
+
+                            const newState = !isChecked;
+                            setIsChecked(newState);
+                            if (isChecked) {
                                 await removeReminder(item.localId, item.id);
                                 await CancelNotification(item.localId, item.id)
                                 setReload(prev => !prev);
@@ -64,12 +75,12 @@ const NotesCard: FC<NotesCardProps> = ({ item, setReload, highlightId }) => {
 
                             // Otherwise open datepicker modal to add reminder
                             setSelectedNote(item);
-                            setCancelAction(() => () =>{});
+                            setCancelAction(() => () => { });
                             setOpen(true);
                         }}
                         hitSlop={5}
                     >
-                        {(remind || item.reminder)
+                        {isChecked
                             ? <MaterialIcons name="check-box" size={24} color="#df5d88ff" />
                             : <MaterialIcons name="check-box-outline-blank" size={24} color="#df5d88ff" />
                         }
