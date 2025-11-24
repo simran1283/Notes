@@ -14,21 +14,23 @@ import useHome from "../ViewModel/homeViewModel"
 import Ionicons from "react-native-vector-icons/Ionicons"
 import EmptyNotes from "../../../components/EmptyNotes/View/EmptyNotes"
 import { showMessage } from "react-native-flash-message"
-import { useNavigation, useRoute } from "@react-navigation/native"
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
+import { RootStackParamList } from "../../../types/NavigationType"
 
 
 const Home = () => {
 
-    const route = useRoute()
+    const route = useRoute<RouteProp<RootStackParamList,"Home">>()
+
     const highlightId = route?.params?.id
 
     const { allNotes, setAllNotes, fetchNotes, handleSync, navigation } = useHome()
     const [reload, setReload] = useState(false)
     const [loading, setLoading] = useState(true)
-    const [lastSync, setLastSync] = useState("")
-    const [highlightedId, setHighlightedId] = useState(null)
+    const [lastSync, setLastSync] = useState<string | null>("")
+    const [highlightedId, setHighlightedId] = useState<string | number | null>(null)
     
 
     console.log("Highlighting id : ", highlightId)

@@ -10,12 +10,12 @@ import { StackNavigationProp } from "@react-navigation/stack"
 import { RootStackParamList } from "../../../types/NavigationType"
 
 interface Note {
-  id?: number
-  fireStoreId?: string
+  id?: number | string | null
+  fireStoreId?: string | null
   note: string
   lastUpdated: number
   sync: number
-  localId?: number
+  localId?: number | null | string
   reminder?: string
   notificationId?: string
 }
@@ -27,8 +27,8 @@ const useHome = () => {
   const isSyncing = useRef(false)
   const navigation = useNavigation<StackNavigationProp<RootStackParamList, "SignUp">>()
 
-  // 🔹 FIXED fetchNotes function
-  const fetchNotes = async (setAllNotes: React.Dispatch<React.SetStateAction<Note[]>>) => {
+  // fetchNotes function
+  const fetchNotes = async (setAllNotes: (notes : Note[]) => void) => {
     const userId = auth().currentUser?.uid
     const db = await initDB()
     const state = await NetInfo.fetch()
@@ -55,7 +55,7 @@ const useHome = () => {
           notificationId: doc.data().notificationId ?? null
         }));
 
-        //  Fix duplication issue here
+        //  duplication issue fixed
         db?.transaction(tx => {
           fetchedNotes.forEach(note => {
             tx.executeSql(
@@ -101,7 +101,7 @@ const useHome = () => {
           });
         });
 
-        // ✅ Update in-memory notes
+        //  Update in-memory notes
         setAllNotes(
           fetchedNotes.map(n => ({
             id: n.fireStoreId,
@@ -132,7 +132,7 @@ const useHome = () => {
             setAllNotes(
               notes.map(n => ({
                 id: n.fireStoreId,
-                note: n.text,
+                note: n.text, //n.note
                 localId: n.id,
                 lastUpdated: n.lastUpdated,
                 sync: n.sync,

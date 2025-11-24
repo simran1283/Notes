@@ -1,7 +1,7 @@
 export interface NotesCardProps {
     item: Note,
     setReload: React.Dispatch<React.SetStateAction<boolean>>;
-    highlightId: string | number
+    highlightId: string | number | null
 }
 
 
