@@ -14,20 +14,28 @@ import useHome from "../ViewModel/homeViewModel"
 import Ionicons from "react-native-vector-icons/Ionicons"
 import EmptyNotes from "../../../components/EmptyNotes/View/EmptyNotes"
 import { showMessage } from "react-native-flash-message"
-import { useNavigation } from "@react-navigation/native"
+import { useNavigation, useRoute } from "@react-navigation/native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import MaterialIcons from "react-native-vector-icons/MaterialIcons"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+
 const Home = () => {
+
+    const route = useRoute()
+    const highlightId = route?.params?.id
 
     const { allNotes, setAllNotes, fetchNotes, handleSync } = useHome()
     const [reload, setReload] = useState(false)
     const [loading, setLoading] = useState(true)
     const [lastSync, setLastSync] = useState("")
+    const [highlightedId, setHighlightedId] = useState(null)
     const navigation = useNavigation()
 
+    console.log("Highlighting id : ", highlightId)
+
     useEffect(() => {
+
         const unsubscribe = NetInfo.addEventListener(state => {
             if (state.isConnected) {
                 handleSync()
@@ -35,6 +43,7 @@ const Home = () => {
         })
         return () => unsubscribe()
     }, [])
+
 
     useEffect(() => {
         const getNotes = async () => {
@@ -54,6 +63,18 @@ const Home = () => {
         }
         getNotes()
     }, [reload])
+
+    useEffect(() => {
+        if (highlightId) {
+            setHighlightedId(highlightId)
+            const timer = setTimeout(() => {
+                setHighlightedId(null)
+            }, 2500)
+
+            return () => clearTimeout(timer)
+        }
+
+    }, [route?.params?.id])
 
     if (loading) {
         return (
@@ -113,59 +134,6 @@ const Home = () => {
 }
 
 export default Home
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         paddingHorizontal: s(15),
-//         paddingTop: vs(10),
-//     },
-
-//     loaderContainer: {
-//         flex: 1,
-//         alignItems: "center",
-//         justifyContent: "center",
-//     },
-
-//     header: {
-//         flexDirection: "row",
-//         alignItems: "center",
-//         justifyContent: "space-between",
-//         marginBottom: vs(10),
-//         paddingVertical: vs(5),
-//     },
-
-//     syncText: {
-//         fontSize: ms(13),
-//         color: "#333",
-//         flexShrink: 1,
-//     },
-
-//     logoutBtn: {
-//         padding: s(6),
-//     },
-
-//     listContainer: {
-//         paddingBottom: vs(60), // space for floating button
-//     },
-
-//     addButton: {
-//         position: "absolute",
-//         bottom: vs(20),
-//         right: s(20),
-//         backgroundColor: "#df5d88ff",
-//         width: ms(50),
-//         height: ms(50),
-//         borderRadius: ms(25),
-//         alignItems: "center",
-//         justifyContent: "center",
-//         shadowColor: "#000",
-//         shadowOpacity: 0.2,
-//         shadowOffset: { width: 0, height: 2 },
-//         shadowRadius: 3,
-//         elevation: 5,
-//     },
-// })
 
 
 const styles = StyleSheet.create({

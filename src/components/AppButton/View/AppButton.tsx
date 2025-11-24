@@ -5,12 +5,15 @@ import { AppButtonProps } from "../Model/AppButtonProps"
 
 
 const AppButton: FC<AppButtonProps> = ({ title, style, onPress, disabled }) => {
+
+    const ACTIVE_OPACITY = 0.7
+
     return (
         <TouchableOpacity
             style={[styles.appButton, style, disabled ? styles.disabledButton : {}]}
             onPress={onPress}
             disabled={disabled}
-            activeOpacity={0.7}
+            activeOpacity={ACTIVE_OPACITY}
         >
             <Text style={[styles.title, disabled ? styles.disabledText : {}]}>{title}</Text>
         </TouchableOpacity>

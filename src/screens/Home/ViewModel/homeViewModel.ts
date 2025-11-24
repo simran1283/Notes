@@ -13,6 +13,8 @@ interface Note {
   lastUpdated: number
   sync: number
   localId?: number
+  reminder? : string
+  notificationId? : string
 }
 
 const useHome = () => {
@@ -44,6 +46,8 @@ const useHome = () => {
           fireStoreId: doc.id,
           text: doc.data().note,
           lastUpdated: doc.data().lastUpdated,
+          reminder: doc.data().reminder ?? null,
+          notificationId: doc.data().notificationId ?? null
         }));
 
         //  Fix duplication issue here
@@ -52,10 +56,10 @@ const useHome = () => {
             tx.executeSql(
               `
           UPDATE notes
-          SET fireStoreId = ?, text = ?, lastUpdated = ?, sync = 1
+          SET fireStoreId = ?, text = ?, lastUpdated = ?, reminder = ?, notificationId = ?, sync = 1
           WHERE userId = ? AND text = ? AND fireStoreId IS NULL
           `,
-              [note.fireStoreId, note.text, note.lastUpdated, userId, note.text],
+              [note.fireStoreId, note.text, note.lastUpdated,note.reminder, note.notificationId, userId, note.text],
               (_, result) => {
                 // If no local note was updated, insert as new
                 if (result.rowsAffected === 0) {
@@ -67,10 +71,10 @@ const useHome = () => {
                       if (res.rows.length === 0) {
                         tx.executeSql(
                           `
-          INSERT INTO notes (userId, fireStoreId, text, lastUpdated, sync)
-          VALUES (?, ?, ?, ?, 1)
+          INSERT INTO notes (userId, fireStoreId, text, lastUpdated, reminder,notificationId, sync)
+          VALUES (?, ?, ?, ?, ?, ?, 1)
           `,
-                          [userId, note.fireStoreId, note.text, note.lastUpdated]
+                          [userId, note.fireStoreId, note.text, note.lastUpdated, note.reminder, note.notificationId]
                         );
                       } else {
                         // 🔹 If already exists, just update its content
@@ -99,6 +103,8 @@ const useHome = () => {
             note: n.text,
             lastUpdated: n.lastUpdated,
             sync: 1,
+            reminder : n.reminder,
+            notificationId : n.notificationId
           }))
         );
 
@@ -125,6 +131,8 @@ const useHome = () => {
                 localId: n.id,
                 lastUpdated: n.lastUpdated,
                 sync: n.sync,
+                reminder : n.reminder,
+                notificationId : n.notificationId
               }))
             )
           }

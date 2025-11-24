@@ -5,11 +5,19 @@ import NetInfo from "@react-native-community/netinfo"
 import { Note } from "../Model/NotesCardProps";
 import { initDB } from "../../../database/databse";
 import { useNavigation } from "@react-navigation/native";
+import { useState } from "react";
 
 
 const useNotesCard = (setReload) => {
 
   const navigation = useNavigation()
+
+  const [remind, setRemind] = useState(false)
+
+
+  const onToggleCheck = () => {
+    setRemind((prev) => !prev)
+  }
 
   const onPressEdit = (item: Note) => {
     navigation.navigate("EditNote", {
@@ -18,9 +26,7 @@ const useNotesCard = (setReload) => {
   }
 
   const deleteNote = async (item: Note) => {
-
     console.log(item)
-
     try {
 
       const db = await initDB()
@@ -105,7 +111,10 @@ const useNotesCard = (setReload) => {
 
   return {
     deleteNote,
-    onPressEdit
+    onPressEdit,
+    remind,
+    setRemind,
+    onToggleCheck
   }
 }
 
